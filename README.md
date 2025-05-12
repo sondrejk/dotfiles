@@ -26,5 +26,5 @@ Jetbrains mono font
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/install_manual.sh)"
 ```
 
-Creating wallpapers
+Creating wallpapers\
 https://github.com/Achno/gowall
