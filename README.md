@@ -1,13 +1,14 @@
 ### Useful commands
-installing programs
-`sudo pacman -S ghostty neovim obsidian bitwarden zoxide bat fzf ripgrep docker docker-compose discord zsh tmux fd poetry npm yarn pyenv lazygit steam`
 
 yay settings
 `yay --save --answerdiff None --answerclean None --removemake`
 This creates a file in `~/.config/yay/config.json` to save the preference
 
+installing programs
+`sudo pacman -S ghostty neovim obsidian bitwarden zoxide bat fzf ripgrep docker docker-compose discord zsh tmux fd poetry npm yarn pyenv lazygit steam`
+
 yay installations
-yay -S spotify gowall
+yay -S spotify gowall visual-studio-code-bin
 
 oh-my-zsh
 `sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"`
