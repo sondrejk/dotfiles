@@ -28,3 +28,8 @@ Jetbrains mono font
 
 Creating wallpapers\
 https://github.com/Achno/gowall
+
+For Spotify local playback
+```bash
+sudo pacman -S ffmpeg4.4 zenity
+```
