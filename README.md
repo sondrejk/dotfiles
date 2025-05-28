@@ -1,42 +1,42 @@
-### Useful commands
+## Useful commands
 
-yay settings
+### yay settings
 ```bash
 yay --save --answerdiff None --answerclean None --removemake
 ```
 This creates a file in `~/.config/yay/config.json` to save the preference
 
-installing programs
+### Installing programs
 ```bash
 sudo pacman -S ghostty neovim obsidian bitwarden zoxide bat fzf ripgrep docker docker-compose discord zsh tmux fd poetry npm yarn pyenv lazygit steam jdk-openjdk
 ```
 
-yay installations
+### yay installations
 ```bash
 yay -S spotify gowall visual-studio-code-bin java-openjfx
 ```
 
-oh-my-zsh
+### oh-my-zsh
 ```bash
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 ```
 
-Jetbrains mono font
+### Jetbrains mono font
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/install_manual.sh)"
 ```
 
-Creating wallpapers\
+### Creating wallpapers\
 https://github.com/Achno/gowall
 
-For Spotify local playback
+### For Spotify local playback
 ```bash
 sudo pacman -S ffmpeg4.4 zenity
 ```
 
-How to hide systemd boot menu on startup.
-1. ```bash
+### How to hide systemd boot menu on startup.
+```bash
 su root
 vim /etc/loader/loader.conf
 ```
-2. Change `timeout` to `menu-hidden`
+Change `timeout` to `menu-hidden`
