@@ -33,3 +33,10 @@ For Spotify local playback
 ```bash
 sudo pacman -S ffmpeg4.4 zenity
 ```
+
+How to hide systemd boot menu on startup.
+1. ```bash
+su root
+vim /etc/loader/loader.conf
+```
+2. Change `timeout` to `menu-hidden`
