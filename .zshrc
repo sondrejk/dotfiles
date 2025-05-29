@@ -1,14 +1,23 @@
+
+# fastfetch - the welcome prompt when opening the terminal
+fastfetch
+
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
 # DEFAULT EDITOR
 export EDITOR='vim'
-
-# Oh-my-zsh installation path
-ZSH=/usr/share/oh-my-zsh/
 
 # Powerlevel10k theme path
 source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme
 
 # List of plugins used
-plugins=( git sudo zsh-256color zsh-autosuggestions zsh-syntax-highlighting )
+plugins=( git sudo )
+export ZSH=~/.oh-my-zsh
 source $ZSH/oh-my-zsh.sh
 
 # In case a command is not found, try to find the package that has it
@@ -88,9 +97,6 @@ alias mkdir='mkdir -p'
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-
-# fastfetch - the welcome prompt when opening the terminal
-fastfetch
 
 # Pyenv
 export PYENV_ROOT="$HOME/.pyenv"
