@@ -84,6 +84,7 @@ alias pc='$aurhelper -Sc' # remove unused cache
 alias po='$aurhelper -Qtdq | $aurhelper -Rns -' # remove unused packages, also try > $aurhelper -Qqd | $aurhelper -Rsu --print -
 alias vc='code' # gui code editor
 alias zshconfig="vim ~/.zshrc"
+alias lg="lazygit"
 
 # Directory navigation shortcuts
 alias ..='cd ..'
