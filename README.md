@@ -40,3 +40,11 @@ su root
 vim /etc/loader/loader.conf
 ```
 Change `timeout` to `menu-hidden`
+
+### How to fix minecraft crashing from openal
+```bash
+[general]
+drivers=pulse
+hrtf=true
+```
+in ~/.alsoftrc
