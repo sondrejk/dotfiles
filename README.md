@@ -13,7 +13,7 @@ sudo pacman -S ghostty neovim obsidian bitwarden zoxide bat fzf ripgrep docker d
 
 ### yay installations
 ```bash
-yay -S spotify gowall visual-studio-code-bin java-openjfx
+yay -S spotify gowall visual-studio-code-bin java-openjfx vim-gruvbox-git
 ```
 
 ### oh-my-zsh
