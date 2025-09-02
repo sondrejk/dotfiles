@@ -142,3 +142,7 @@ alias hyprconf="vim ~/.config/hypr"
 # OPEN PROJECTS
 alias webdev="cd ~/repos/personal/web-dev-learning && vim ~/repos/personal/web-dev-learning/react"
 alias oop="cd ~/repos/ntnu/oop-spillprosjekt"
+
+#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+export SDKMAN_DIR="$HOME/.sdkman"
+[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
