@@ -28,8 +28,19 @@ if wezterm.target_triple:find("windows") ~= nil then
 			distribution = "Ubuntu",
 			default_cwd = "/home/sondrejk/", -- Sets default directory
 		},
+		{
+			-- The name of this specific domain.  Must be unique amongst all types
+			-- of domain in the configuration file.
+			name = "WSL:archlinux",
+
+			-- The name of the distribution.  This identifies the WSL distribution.
+			-- It must match a valid distribution from your `wsl -l -v` output in
+			-- order for the domain to be useful.
+			distribution = "archlinux",
+			default_cwd = "/home/sondrejk/", -- Sets default directory
+		},
 	}
-	config.default_domain = "WSL:Ubuntu"
+	config.default_domain = "WSL:archlinux"
 end
 
 -- Font
