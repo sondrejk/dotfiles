@@ -1,6 +1,9 @@
 
-# fastfetch - the welcome prompt when opening the terminal
-fastfetch
+# TMUX related
+if [ -z "$TMUX" ] && [ "$TERM" != "screen" ] && [ -n "$PS1" ]; then
+        tmux attach-session -t main || tmux new-session -s main
+fi
+
 
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
@@ -10,10 +13,7 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
 fi
 
 # DEFAULT EDITOR
-export EDITOR='vim'
-
-# Powerlevel10k theme path
-source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme
+export EDITOR='nvim'
 
 # List of plugins used
 plugins=( git sudo )
@@ -139,10 +139,10 @@ function y() {
 # ALIASES FOR CONFIGS
 alias hyprconf="vim ~/.config/hypr"
 
+
 # OPEN PROJECTS
-alias webdev="cd ~/repos/personal/web-dev-learning && vim ~/repos/personal/web-dev-learning/react"
-alias oop="cd ~/repos/ntnu/oop-spillprosjekt"
 
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+source ~/powerlevel10k/powerlevel10k.zsh-theme
