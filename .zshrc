@@ -146,3 +146,5 @@ alias hyprconf="vim ~/.config/hypr"
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
 source ~/powerlevel10k/powerlevel10k.zsh-theme
+
+. "$HOME/.local/bin/env"
