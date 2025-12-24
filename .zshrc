@@ -15,8 +15,15 @@ fi
 # DEFAULT EDITOR
 export EDITOR='nvim'
 
+# SSH AGENT CONFIG
+zstyle :omz:plugins:ssh-agent agent-forwarding yes
+zstyle :omz:plugins:ssh-agent identities personlig_id_ed25519 gammel_id_rsa
+zstyle :omz:plugins:ssh-agent quiet yes
+zstyle :omz:plugins:ssh-agent lazy no
+
 # List of plugins used
-plugins=( git sudo )
+plugins=( git sudo ssh-agent )
+
 export ZSH=~/.oh-my-zsh
 source $ZSH/oh-my-zsh.sh
 
@@ -39,6 +46,7 @@ function command_not_found_handler {
     fi
     return 127
 }
+
 
 # Detect AUR wrapper
 if pacman -Qi yay &>/dev/null; then
@@ -74,7 +82,6 @@ alias c='clear' # clear terminal
 alias l='eza -lh --icons=auto' # long list
 alias ls='eza -1 --icons=auto' # short list
 alias ll='eza -lha --icons=auto --sort=name --group-directories-first' # long list all
-alias ld='eza -lhD --icons=auto' # long list dirs
 alias lt='eza --icons=auto --tree' # list folder as tree
 alias un='$aurhelper -Rns' # uninstall package
 alias up='$aurhelper -Syu' # update system/package/aur
@@ -83,8 +90,15 @@ alias pa='$aurhelper -Ss' # list available package
 alias pc='$aurhelper -Sc' # remove unused cache
 alias po='$aurhelper -Qtdq | $aurhelper -Rns -' # remove unused packages, also try > $aurhelper -Qqd | $aurhelper -Rsu --print -
 alias vc='code' # gui code editor
-alias zshconfig="vim ~/.zshrc"
 alias lg="lazygit"
+alias ld="lazydocker"
+alias xclip="xclip -selection c" # Xclip alias
+alias cd="z"
+
+# ALIASES FOR CONFIGS
+alias hyprconf="vim ~/.config/hypr"
+alias tmuxconf="vim ~/.tmux.conf"
+alias zshconfig="vim ~/.zshrc"
 
 # Directory navigation shortcuts
 alias ..='cd ..'
@@ -136,15 +150,20 @@ function y() {
 	rm -f -- "$tmp"
 }
 
-# ALIASES FOR CONFIGS
-alias hyprconf="vim ~/.config/hypr"
-
-
-# OPEN PROJECTS
-
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
 source ~/powerlevel10k/powerlevel10k.zsh-theme
 
 . "$HOME/.local/bin/env"
+export PASSWORD_STORE_DIR="/home/sondrejk/repos/webkom/password-store"
+
+## Webkom's .zshrc-config
+webkom_dotfiles_dir='/home/sondrejk/repos/webkom/dotfiles'
+source $webkom_dotfiles_dir/.zshrc
+
+# FZF history
+source /usr/share/fzf/key-bindings.zsh
+source /usr/share/fzf/completion.zsh
+
+clear
