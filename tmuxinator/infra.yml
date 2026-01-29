@@ -1,0 +1,12 @@
+# /home/sondrejk/.config/tmuxinator/infra.yml
+
+name: infra
+root: ~/repos/webkom/infrastructure
+
+windows:
+    - infrastructure:
+        layout: main-vertical
+        panes:
+            - shell:
+            - server:
+                - ssh infra
