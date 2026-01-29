@@ -1,20 +1,26 @@
 ## Useful commands
 
-### yay settings
-```bash
-yay --save --answerdiff None --answerclean None --removemake
-```
-This creates a file in `~/.config/yay/config.json` to save the preference
 
 ### Installing programs
+## Must haves
 ```bash
-sudo pacman -S ghostty neovim obsidian bitwarden zoxide bat fzf ripgrep docker docker-compose discord zsh tmux fd poetry npm yarn pyenv lazygit steam jdk-openjdk
+sudo pacman -S neovim obsidian bitwarden zoxide bat fzf ripgrep docker docker-compose zsh tmux fd poetry npm yarn pyenv lazygit lazydocker steam uv ark btop dolphin jq fastfetch eza firefox git zed wezterm wget curl gvim github-cli pass pass-otp pnpm tldr unzip xclip
+```
+## Nice to have
+```bash
+sudo pacman -S discord godot prismlauncher qemu-full tailscale gdb valgrind
 ```
 
-### yay installations
+## From AUR
 ```bash
-yay -S spotify gowall visual-studio-code-bin java-openjfx vim-gruvbox-git
+yay -S gowall visual-studio-code-bin vim-gruvbox-git spotify tmuxinator
 ```
+
+## For xbox one controller
+```bash
+yay -S xone-dkms
+```
+
 
 ### oh-my-zsh
 ```bash
@@ -42,9 +48,9 @@ vim /etc/loader/loader.conf
 Change `timeout` to `menu-hidden`
 
 ### How to fix minecraft crashing from openal
+in ~/.alsoftrc
 ```bash
 [general]
 drivers=pulse
 hrtf=true
 ```
-in ~/.alsoftrc

@@ -13,7 +13,7 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
 fi
 
 # DEFAULT EDITOR
-export EDITOR='nvim'
+export EDITOR='vim'
 
 # SSH AGENT CONFIG
 zstyle :omz:plugins:ssh-agent agent-forwarding yes
@@ -94,11 +94,12 @@ alias lg="lazygit"
 alias ld="lazydocker"
 alias xclip="xclip -selection c" # Xclip alias
 alias cd="z"
+alias mux="tmuxinator"
 
 # ALIASES FOR CONFIGS
-alias hyprconf="vim ~/.config/hypr"
-alias tmuxconf="vim ~/.tmux.conf"
-alias zshconfig="vim ~/.zshrc"
+alias hyprconf="$EDITOR ~/.config/hypr"
+alias tmuxconf="$EDITOR ~/.tmux.conf"
+alias zshconf="$EDITOR ~/.zshrc"
 
 # Directory navigation shortcuts
 alias ..='cd ..'
