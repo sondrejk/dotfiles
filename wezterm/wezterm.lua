@@ -44,7 +44,7 @@ if wezterm.target_triple:find("windows") ~= nil then
 end
 
 -- Font
-config.font = wezterm.font("JetBrains Mono Nerd Font")
+config.font = wezterm.font("MesloLGS NF")
 
 -- Color scheme
 config.color_scheme = "Gruvbox Dark (Gogh)"
