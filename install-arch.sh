@@ -22,17 +22,6 @@ install_yay() {
   rm -rf "$tmpdir"
 }
 
-install_antidote() {
-  ANTIDOTE_DIR="${ZDOTDIR:-$HOME}/.antidote"
-  if [ -d "$ANTIDOTE_DIR/repos/antidote" ]; then
-    echo "Antidote already installed at $ANTIDOTE_DIR/repos/antidote"
-    return 0
-  fi
-  mkdir -p "$ANTIDOTE_DIR/repos"
-  git clone --depth=1 https://github.com/mattmc3/antidote.git "$ANTIDOTE_DIR/repos/antidote"
-  echo "Antidote installed to $ANTIDOTE_DIR/repos/antidote"
-}
-
 packages_common=(git curl neovim zsh openssh zoxide bat fzf ripgrep docker docker-compose tmux fd poetry npm yarn pyenv lazygit laztydocker uv jq eza wget gvim github-cli pass pass-otp gpg pnpm tldr unzip xclip qemu-full)
 packages_wsl=(xdg-utils vulkan-dzn)
 packages_native=(xorg-server xorg-xinit xorg-apps mesa pulseaudio networkmanager obsidian bitwarden steam btop firefox wezterm ffmpeg4.4 zenity qemu-full tailscale gdb valgrind)
@@ -41,10 +30,6 @@ echo "This script will install packages and symlink dotfiles from: $DOTFILES_DIR
 
 if confirm "Install yay (AUR helper)?"; then
   install_yay
-fi
-
-if confirm "Install Antidote (zsh plugin manager)?"; then
-  install_antidote
 fi
 
 if confirm "Are you running this on WSL Arch?"; then
@@ -60,8 +45,24 @@ else
 fi
 
 echo "Updating package database and installing packages..."
+# Temporarily allow commands to fail so we still proceed to config steps
+set +e
 sudo pacman -Syu --noconfirm
-sudo pacman -S --needed --noconfirm "${packages[@]}"
+rc_update=$?
+if [ $rc_update -ne 0 ]; then
+  echo "Warning: 'pacman -Syu' exited with code $rc_update — continuing"
+fi
+
+if [ ${#packages[@]} -gt 0 ]; then
+  sudo pacman -S --needed --noconfirm "${packages[@]}"
+  rc_install=$?
+  if [ $rc_install -ne 0 ]; then
+    echo "Warning: 'pacman -S' exited with code $rc_install — continuing"
+  fi
+else
+  echo "No packages to install."
+fi
+set -e
 
 if [ "$is_wsl" = true ]; then
   target_dir="/mnt/c/Users/sondr/.config"
