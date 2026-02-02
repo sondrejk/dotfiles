@@ -19,6 +19,13 @@ typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
 # List of plugins used
 plugins=( git sudo ssh-agent docker fzf zoxide pyenv)
 
+# SSH AGENT CONFIG
+zstyle :omz:plugins:ssh-agent agent-forwarding yes
+zstyle :omz:plugins:ssh-agent identities personlig_id_ed25519 gammel_id_rsa
+zstyle :omz:plugins:ssh-agent quiet yes
+# zstyle :omz:plugins:ssh-agent lazy no
+
+
 export EDITOR='vim'
 export PASSWORD_STORE_DIR="/home/sondrejk/repos/webkom/password-store"
 export PYENV_ROOT="$HOME/.pyenv"
@@ -52,11 +59,5 @@ alias ...='cd ../..'
 alias .3='cd ../../..'
 alias .4='cd ../../../..'
 alias .5='cd ../../../../..'
-
-# SSH AGENT CONFIG
-zstyle :omz:plugins:ssh-agent agent-forwarding yes
-zstyle :omz:plugins:ssh-agent identities personlig_id_ed25519 gammel_id_rsa
-zstyle :omz:plugins:ssh-agent quiet yes
-# zstyle :omz:plugins:ssh-agent lazy no
 
 eval "$(pyenv init --path)"
