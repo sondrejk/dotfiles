@@ -6,8 +6,8 @@ DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 confirm() {
   read -rp "$1 [y/N]: " ans
   case "$ans" in
-    [Yy]*) return 0 ;;
-    *) return 1 ;;
+  [Yy]*) return 0 ;;
+  *) return 1 ;;
   esac
 }
 
@@ -45,42 +45,42 @@ install_powerlevel10k() {
   echo "Cloned powerlevel10k into $target. Your ~/.zshrc is unchanged and can source the theme from this location."
 }
 
-  # Optionally install tmux plugin manager (tpm)
-  install_tpm() {
-    target="$HOME/.tmux/plugins/tpm"
-    if [ -d "$target" ]; then
-      echo "tpm already installed at $target"
-      return 0
-    fi
-    echo "Cloning tpm to $target..."
-    mkdir -p "$(dirname "$target")"
-    git clone https://github.com/tmux-plugins/tpm "$target"
-    echo "Cloned tpm into $target. To enable plugins run: ~/.tmux/plugins/tpm/tpm install after starting tmux."
-  }
+# Optionally install tmux plugin manager (tpm)
+install_tpm() {
+  target="$HOME/.tmux/plugins/tpm"
+  if [ -d "$target" ]; then
+    echo "tpm already installed at $target"
+    return 0
+  fi
+  echo "Cloning tpm to $target..."
+  mkdir -p "$(dirname "$target")"
+  git clone https://github.com/tmux-plugins/tpm "$target"
+  echo "Cloned tpm into $target. To enable plugins run: ~/.tmux/plugins/tpm/tpm install after starting tmux."
+}
 
-  # Prompt for git user config and create .gitconfig in the dotfiles repo
-  setup_gitconfig() {
-    # Try to read existing global values as defaults
-    default_name="$(git config --global user.name 2>/dev/null || true)"
-    default_email="$(git config --global user.email 2>/dev/null || true)"
+# Prompt for git user config and create .gitconfig in the dotfiles repo
+setup_gitconfig() {
+  # Try to read existing global values as defaults
+  default_name="$(git config --global user.name 2>/dev/null || true)"
+  default_email="$(git config --global user.email 2>/dev/null || true)"
 
-    read -rp "Git user.name [${default_name}]: " git_name
-    git_name="${git_name:-$default_name}"
-    read -rp "Git user.email [${default_email}]: " git_email
-    git_email="${git_email:-$default_email}"
+  read -rp "Git user.name [${default_name}]: " git_name
+  git_name="${git_name:-$default_name}"
+  read -rp "Git user.email [${default_email}]: " git_email
+  git_email="${git_email:-$default_email}"
 
-    if [ -z "$git_name" ] || [ -z "$git_email" ]; then
-      echo "Name or email empty — skipping .gitconfig creation."
-      return 0
-    fi
+  if [ -z "$git_name" ] || [ -z "$git_email" ]; then
+    echo "Name or email empty — skipping .gitconfig creation."
+    return 0
+  fi
 
-    cfg_path="$DOTFILES_DIR/.gitconfig"
-    if [ -f "$cfg_path" ]; then
-      mv "$cfg_path" "$cfg_path".bak
-      echo "Backed up existing $cfg_path -> $cfg_path.bak"
-    fi
+  cfg_path="$DOTFILES_DIR/.gitconfig"
+  if [ -f "$cfg_path" ]; then
+    mv "$cfg_path" "$cfg_path".bak
+    echo "Backed up existing $cfg_path -> $cfg_path.bak"
+  fi
 
-    cat > "$cfg_path" <<EOF
+  cat >"$cfg_path" <<EOF
 [user]
 name = $git_name
 email = $git_email
@@ -88,12 +88,12 @@ email = $git_email
 editor = ${EDITOR:-vim}
 EOF
 
-    echo "Wrote $cfg_path"
-  }
+  echo "Wrote $cfg_path"
+}
 
 packages_common=(git curl neovim zsh openssh zoxide bat fzf ripgrep docker docker-compose tmux fd poetry npm yarn pyenv lazygit laztydocker uv jq eza wget gvim github-cli pass pass-otp gpg pnpm tldr unzip xclip qemu-full)
 packages_wsl=(xdg-utils vulkan-dzn)
-packages_native=(xorg-server xorg-xinit xorg-apps mesa pulseaudio networkmanager obsidian bitwarden steam btop firefox wezterm ffmpeg4.4 zenity qemu-full tailscale gdb valgrind)
+packages_native=(ttf-jetbrains-mono-nerd xorg-server xorg-xinit xorg-apps mesa pulseaudio networkmanager obsidian bitwarden steam btop firefox wezterm ffmpeg4.4 zenity qemu-full tailscale gdb valgrind)
 
 echo "This script will install packages and symlink dotfiles from: $DOTFILES_DIR"
 
@@ -117,7 +117,7 @@ if confirm "Clone powerlevel10k into dotfiles repo ("${ZSH_CUSTOM:-$HOME/.oh-my-
 fi
 
 if confirm "Install tmux plugin manager (tpm)?"; then
-    install_tpm
+  install_tpm
 fi
 
 if [ -f "$DOTFILES_DIR/.gitconfig" ]; then
@@ -178,7 +178,7 @@ if confirm "Proceed with symlinking dotfiles (existing files will be backed up w
     echo "Linked $dest -> $src"
   }
 
-  # Common mappings (edit these to match your repo layout)    
+  # Common mappings (edit these to match your repo layout)
   if [ -d "$DOTFILES_DIR/nvim" ]; then
     ln_link "$DOTFILES_DIR/nvim" "$HOME/.config/nvim"
   fi
