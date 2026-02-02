@@ -91,7 +91,7 @@ EOF
   echo "Wrote $cfg_path"
 }
 
-packages_common=(git curl neovim zsh openssh zoxide bat fzf ripgrep docker docker-compose tmux fd poetry npm yarn pyenv lazygit laztydocker uv jq eza wget gvim github-cli pass pass-otp gpg pnpm tldr unzip xclip qemu-full)
+packages_common=(git curl neovim zsh openssh zoxide bat fzf ripgrep docker docker-compose tmux fd poetry npm yarn pyenv lazygit lazydocker uv jq eza wget gvim github-cli pass pass-otp gpg pnpm tldr unzip xclip qemu-full)
 packages_wsl=(xdg-utils vulkan-dzn)
 packages_native=(ttf-jetbrains-mono-nerd xorg-server xorg-xinit xorg-apps mesa pulseaudio networkmanager obsidian bitwarden steam btop firefox wezterm ffmpeg4.4 zenity qemu-full tailscale gdb valgrind)
 
