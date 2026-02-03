@@ -23,7 +23,7 @@ plugins=( git sudo ssh-agent docker fzf zoxide pyenv)
 zstyle :omz:plugins:ssh-agent agent-forwarding yes
 zstyle :omz:plugins:ssh-agent identities id_ed25519_personlig id_rsa_gammel id_ed25519_hetzner id_rsa_kvasir
 zstyle :omz:plugins:ssh-agent quiet yes
-zstyle :omz:plugins:ssh-agent lazy yes
+zstyle :omz:plugins:ssh-agent lazy no
 
 export EDITOR='vim'
 export PASSWORD_STORE_DIR="/home/sondrejk/repos/webkom/password-store"
