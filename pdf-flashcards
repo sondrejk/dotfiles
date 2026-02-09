@@ -1,0 +1,352 @@
+#!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n\t'
+
+PDF_DIR="${PDF_DIR:-$HOME/Documents/skolebøker}"
+OUT_DIR="${OUT_DIR:-$HOME/Documents/den_andre_hjerne/flashcards/}"
+MAX_CHARS="${MAX_CHARS:-60000}"
+CHAPTER_PICKER_THRESHOLD_PAGES="${CHAPTER_PICKER_THRESHOLD_PAGES:-50}"
+FLASHCARD_LIMIT="${FLASHCARD_LIMIT:-10}"
+
+# Edit this prompt later (or override via env var: FLASHCARDS_PROMPT='...')
+FLASHCARDS_PROMPT="${FLASHCARDS_PROMPT:-Create flashcards using the text provided in english. Output only in markdown. The flashcards need to be in a very specific format as follows: <front side> :: <back side> for single-line flashcards and <front-side>\n?\n<back side> for multi-line flashcards where the lines have to touch the question mark to be included. If the text contains multiple subjects, create a header using ## <subject name> to separate flashcards from different themes. Create a blank new line between each flashcard}"
+
+need() { command -v "$1" >/dev/null 2>&1 || {
+	echo "Missing dependency: $1" >&2
+	exit 1
+}; }
+
+pick_python_with_pypdf() {
+	local cand py
+	local -a cands=()
+
+	[ -n "${PDF_FLASHCARDS_PYTHON:-}" ] && cands+=("$PDF_FLASHCARDS_PYTHON")
+	cands+=(python3 /usr/bin/python3 python /usr/bin/python)
+
+	for cand in "${cands[@]}"; do
+		py="$cand"
+		if [[ "$py" == /* ]]; then
+			[ -x "$py" ] || continue
+		else
+			command -v "$py" >/dev/null 2>&1 || continue
+			py="$(command -v "$py")"
+		fi
+
+		"$py" -c 'import pypdf' >/dev/null 2>&1 && {
+			echo "$py"
+			return 0
+		}
+	done
+
+	return 1
+}
+
+need fzf
+need pdfinfo
+need pdftotext
+need copilot
+
+[ -d "$PDF_DIR" ] || {
+	echo "PDF_DIR not found: $PDF_DIR" >&2
+	exit 1
+}
+[ -d "$OUT_DIR" ] || {
+	echo "OUT_DIR not found: $OUT_DIR" >&2
+	echo "Create it or set OUT_DIR to an existing directory." >&2
+	exit 1
+}
+
+pdf="$(
+	find "$PDF_DIR" -type f \( -iname '*.pdf' \) 2>/dev/null |
+		sort |
+		fzf \
+			--prompt='Pick PDF: ' \
+			--height=70% --layout=reverse --border \
+			--preview 'pdftotext "{}" - 2>/dev/null | head -n 60' \
+			--preview-window='right:60%:wrap' ||
+		true
+)"
+
+[ -n "${pdf:-}" ] || exit 0
+
+subject="$(
+	printf "%s\n" opsys ktn databases pu |
+		fzf \
+			--prompt='Pick subject: ' \
+			--height=40% --layout=reverse --border ||
+		true
+)"
+
+[ -n "${subject:-}" ] || exit 0
+
+flashcard_limit="$(
+	printf "%s\n" "$FLASHCARD_LIMIT" 5 8 10 12 15 20 custom |
+		awk '!seen[$0]++' |
+		fzf \
+			--prompt='Pick flashcard count: ' \
+			--height=40% --layout=reverse --border ||
+		true
+)"
+
+[ -n "${flashcard_limit:-}" ] || exit 0
+
+if [ "$flashcard_limit" = "custom" ]; then
+	read -r -p "Flashcard count: " flashcard_limit </dev/tty || exit 0
+fi
+
+if ! [[ "${flashcard_limit:-}" =~ ^[0-9]+$ ]] || [ "$flashcard_limit" -lt 1 ]; then
+	echo "Invalid flashcard count: ${flashcard_limit:-}" >&2
+	exit 1
+fi
+
+pdf_name="$(basename "$pdf")"
+
+pdf_pages="$(
+	pdfinfo "$pdf" 2>/dev/null | awk -F: '/^Pages:/ {gsub(/ /,"",$2); print $2; exit}'
+)"
+if ! [[ "${pdf_pages:-}" =~ ^[0-9]+$ ]]; then
+	pdf_pages=0
+fi
+
+chapter_prompt_block=""
+ranges_merged=""
+
+python_pypdf=""
+if [ "$pdf_pages" -ge "$CHAPTER_PICKER_THRESHOLD_PAGES" ]; then
+	python_pypdf="$(pick_python_with_pypdf || true)"
+	if [ -n "${python_pypdf:-}" ]; then
+		if [ "${PDF_FLASHCARDS_DEBUG:-0}" = 1 ]; then
+			echo "Chapter picker enabled (python: $python_pypdf)" >&2
+		fi
+		toc_tsv=""
+		if ! toc_tsv="$(
+			"$python_pypdf" - "$pdf" <<'PY'
+import sys
+from pypdf import PdfReader
+
+path = sys.argv[1]
+
+try:
+    r = PdfReader(path)
+    outline = getattr(r, "outline", None)
+    if outline is None:
+        outline = getattr(r, "outlines", [])
+except Exception:
+    outline = []
+
+
+def title_of(item):
+    t = getattr(item, "title", None)
+    if t:
+        return str(t)
+    if isinstance(item, dict):
+        for k in ("/Title", "Title", "title"):
+            if k in item:
+                return str(item[k])
+    return None
+
+
+def page_of(item):
+    try:
+        n = r.get_destination_page_number(item)
+        return int(n) + 1
+    except Exception:
+        return None
+
+
+rows = []
+idx = 0
+
+
+def walk(items, level):
+    global idx
+    for it in items or []:
+        if isinstance(it, list):
+            walk(it, level + 1)
+            continue
+
+        idx += 1
+        title = title_of(it)
+        page = page_of(it)
+
+        if title and page and level <= 2:
+            disp = ("  " * (level - 1)) + title
+            rows.append((idx, level, page, disp))
+
+
+walk(outline, 1)
+rows.sort(key=lambda x: (x[2], x[1], x[0]))
+
+for row in rows:
+    print("\t".join(map(str, row)))
+PY
+		)"; then
+			toc_tsv=""
+		fi
+
+		if [ -n "${toc_tsv:-}" ]; then
+			selected="$(
+				printf '%s\n' "$toc_tsv" |
+					fzf --multi \
+						--prompt='Pick chapters: ' \
+						--header='TAB: (de)select • ENTER: confirm' \
+						--marker='* ' \
+						--height=70% --layout=reverse --border \
+						--delimiter=$'\t' --with-nth=4.. ||
+					true
+			)"
+
+			[ -n "${selected:-}" ] || exit 0
+
+			declare -A toc_level=() toc_page=() toc_title=()
+			declare -a toc_idx_order=()
+			while IFS=$'\t' read -r idx lvl pg title; do
+				toc_level["$idx"]="$lvl"
+				toc_page["$idx"]="$pg"
+				toc_title["$idx"]="$title"
+				toc_idx_order+=("$idx")
+			done <<<"$toc_tsv"
+
+			ranges_raw="$(
+				while IFS=$'\t' read -r idx lvl pg title; do
+					end="$pdf_pages"
+					pos=-1
+					for ((i = 0; i < ${#toc_idx_order[@]}; i++)); do
+						if [ "${toc_idx_order[i]}" = "$idx" ]; then
+							pos="$i"
+							break
+						fi
+					done
+
+					if [ "$pos" -ge 0 ]; then
+						for ((j = pos + 1; j < ${#toc_idx_order[@]}; j++)); do
+							nidx="${toc_idx_order[j]}"
+							nlvl="${toc_level[$nidx]}"
+							npg="${toc_page[$nidx]}"
+							if [ "$npg" -gt "$pg" ] && [ "$nlvl" -le "$lvl" ]; then
+								end="$((npg - 1))"
+								break
+							fi
+						done
+					fi
+
+					if [ "$end" -lt "$pg" ]; then
+						end="$pg"
+					fi
+
+					printf '%s\t%s\n' "$pg" "$end"
+				done <<<"$selected"
+			)"
+
+			ranges_merged="$(
+				printf '%s\n' "$ranges_raw" |
+					sort -n -k1,1 -k2,2 |
+					awk 'NR==1{S=$1;E=$2;next}{s=$1;e=$2;if(s<=E+1){if(e>E)E=e}else{print S"\t"E;S=s;E=e}}END{if(NR)print S"\t"E}'
+			)"
+
+			selected_pages_meta="$(
+				printf '%s\n' "$ranges_merged" | awk '{printf "%s%s-%s", (NR==1?"":", "), $1, $2}'
+			)"
+			selected_chapters_meta="$(
+				printf '%s\n' "$selected" | awk -F'\t' '{print "- p"$3": "$4}'
+			)"
+
+			chapter_prompt_block="$(
+				cat <<EOF_CHAPTER
+Selected chapters:
+$selected_chapters_meta
+Selected pages: $selected_pages_meta
+
+EOF_CHAPTER
+			)"
+		fi
+	else
+		echo "Large PDF detected ($pdf_pages pages). Tip: install pypdf (Arch: sudo pacman -S python-pypdf) or set PDF_FLASHCARDS_PYTHON=/usr/bin/python3." >&2
+	fi
+fi
+
+out="$(
+	find "$OUT_DIR" -type f \( -iname '*.md' -o -iname '*.markdown' \) 2>/dev/null |
+		sort |
+		fzf \
+			--prompt='Append to file: ' \
+			--height=70% --layout=reverse --border \
+			--preview 'tail -n 80 "{}" 2>/dev/null' \
+			--preview-window='right:60%:wrap' ||
+		true
+)"
+
+[ -n "${out:-}" ] || exit 0
+
+txt="$(mktemp -t pdf-flashcards.XXXXXX.txt)"
+txt_full=""
+err="$(mktemp -t pdf-flashcards.XXXXXX.err)"
+cleanup() {
+	rm -f "$txt" "$err"
+	[ -n "${txt_full:-}" ] && rm -f "$txt_full"
+}
+trap cleanup EXIT
+
+# Extract and truncate to avoid huge prompts / OS arg-length limits.
+if [ -n "${ranges_merged:-}" ]; then
+	txt_full="$(mktemp -t pdf-flashcards.XXXXXX.full.txt)"
+	: >"$txt_full"
+
+	while IFS=$'\t' read -r start end; do
+		printf "\n\n--- BEGIN PAGES %s-%s ---\n" "$start" "$end" >>"$txt_full"
+		: >"$err"
+		if ! pdftotext -f "$start" -l "$end" "$pdf" - 2>"$err" >>"$txt_full"; then
+			echo "Failed to extract pages $start-$end from: $pdf" >&2
+			head -n 20 "$err" >&2 || true
+			exit 1
+		fi
+		printf "\n--- END PAGES %s-%s ---\n" "$start" "$end" >>"$txt_full"
+	done <<<"$ranges_merged"
+
+	head -c "$MAX_CHARS" "$txt_full" >"$txt"
+else
+	: >"$err"
+	set +e
+	pdftotext "$pdf" - 2>"$err" | head -c "$MAX_CHARS" >"$txt"
+	ps=("${PIPESTATUS[@]}")
+	pdftotext_st="${ps[0]:-0}"
+	head_st="${ps[1]:-0}"
+	set -e
+
+	if [ "$head_st" -ne 0 ]; then
+		echo "Failed to truncate extracted text from: $pdf" >&2
+		exit 1
+	fi
+
+	# pdftotext often exits with SIGPIPE (141) when head stops early; treat that as success.
+	if [ "$pdftotext_st" -ne 0 ] && [ "$pdftotext_st" -ne 141 ]; then
+		echo "Failed to extract text from: $pdf" >&2
+		head -n 20 "$err" >&2 || true
+		exit 1
+	fi
+fi
+
+prompt="$(
+	cat <<EOF_PROMPT
+The first line should contain #flashcards/$subject/<kebab-case-subject-of-text>.
+The second line should be the PDF filename (exactly as shown after 'PDF filename:' below), with no extra text.
+
+Limit the amount of flashcards to maximum $flashcard_limit (preferably fewer).
+
+$FLASHCARDS_PROMPT
+
+$chapter_prompt_block
+Source PDF: $pdf
+PDF filename: $pdf_name
+
+--- BEGIN EXTRACTED TEXT (truncated to ${MAX_CHARS} chars) ---
+$(cat "$txt")
+--- END EXTRACTED TEXT ---
+EOF_PROMPT
+)"
+
+printf "\n\n" >>"$out"
+copilot -p "$prompt" >>"$out"
+printf "\n" >>"$out"
+
+echo "Appended: $out"
