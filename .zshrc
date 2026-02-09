@@ -29,12 +29,15 @@ export EDITOR='vim'
 export PASSWORD_STORE_DIR="/home/sondrejk/repos/webkom/password-store"
 export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/bin:$PATH"
+export PATH="/home/sondrejk/.local/share/pipx/venvs/ansible-core/bin:$PATH"
+export PATH="/home/sondrejk/.local/bin:$PATH"
+
 export ZSH=~/.oh-my-zsh
 
 source $ZSH/oh-my-zsh.sh
 source ~/.oh-my-zsh/custom/themes/powerlevel10k/powerlevel10k.zsh-theme
+source /usr/share/nvm/init-nvm.sh
 
-ZOXIDE_CMD_OVERRIDE="cd"
 ZSH_THEME="powerlevel10k/powerlevel10k"
 
 # Helpful aliases
@@ -46,12 +49,14 @@ alias lt='eza --icons=auto --tree' # list folder as tree
 alias vc='code' # gui code editor
 alias lg="lazygit"
 alias ld="lazydocker"
+alias cd="z"
 alias xclip="xclip -selection c" # Xclip alias
 alias mux="tmuxinator"
 alias tmuxconf="$EDITOR ~/.tmux.conf"
 alias zshconf="$EDITOR ~/.zshrc"
 alias mkdir='mkdir -p'
 alias cpwez="cp -r ~/repos/personal/dotfiles/wezterm /mnt/c/Users/sondr/.config"
+
 # Directory navigation shortcuts
 alias ..='cd ..'
 alias ...='cd ../..'
