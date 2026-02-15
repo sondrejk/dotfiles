@@ -27,11 +27,9 @@ zstyle :omz:plugins:ssh-agent lazy no
 
 export EDITOR='vim'
 export PASSWORD_STORE_DIR="/home/sondrejk/repos/webkom/password-store"
-export PYENV_ROOT="$HOME/.pyenv"
-export PATH="$PYENV_ROOT/bin:$PATH"
 export PATH="/home/sondrejk/.local/share/pipx/venvs/ansible-core/bin:$PATH"
 export PATH="/home/sondrejk/.local/bin:$PATH"
-
+export PYENV_ROOT="$HOME/.pyenv"
 export ZSH=~/.oh-my-zsh
 
 source $ZSH/oh-my-zsh.sh
@@ -64,4 +62,5 @@ alias .3='cd ../../..'
 alias .4='cd ../../../..'
 alias .5='cd ../../../../..'
 
-eval "$(pyenv init --path)"
+[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init - zsh)"
