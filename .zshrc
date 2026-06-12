@@ -83,3 +83,6 @@ alias ...='cd ../..'
 alias .3='cd ../../..'
 alias .4='cd ../../../..'
 alias .5='cd ../../../../..'
+
+# Use kitty ssh kitten when running inside kitty (forwards terminfo, shell integration, etc.)
+[[ "$TERM" == "xterm-kitty" ]] && alias ssh="kitty +kitten ssh"
