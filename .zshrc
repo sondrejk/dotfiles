@@ -11,7 +11,7 @@ if [[ -o interactive && -t 0 && -t 1 && -z "$TMUX" && "$TERM" != screen* && "$TE
 fi
 
 # Environment
-export EDITOR='vim'
+export EDITOR='nvim'
 export PASSWORD_STORE_DIR="$HOME/repos/webkom/password-store"
 export PYENV_ROOT="$HOME/.pyenv"
 export ZSH="$HOME/.oh-my-zsh"
@@ -74,8 +74,11 @@ alias xclip='xclip -selection c'
 alias mux='tmuxinator'
 alias tmuxconf="$EDITOR ~/.tmux.conf"
 alias zshconf="$EDITOR ~/.zshrc"
+alias kittyconf="$EDITOR ~/.config/kitty/kitty.conf"
 alias mkdir='mkdir -p'
-alias cpwez='cp -r ~/repos/personal/dotfiles/wezterm /mnt/c/Users/sondr/.config'
+
+# Kubectl aliases
+[ -f ~/.config/zsh/kubectl_aliases ] && source ~/.config/zsh/kubectl_aliases
 
 # Directory navigation shortcuts
 alias ..='cd ..'
