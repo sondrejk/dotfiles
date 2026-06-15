@@ -238,7 +238,7 @@ packages_native=(
   steam
   btop
   firefox
-  wezterm
+  kitty
   ffmpeg4.4
   zenity
   qemu-full
@@ -339,11 +339,11 @@ if confirm "Proceed with symlinking dotfiles (existing files will be backed up w
     ln_link "$DOTFILES_DIR/nvim" "$HOME/.config/nvim"
   fi
 
-  if [ -d "$DOTFILES_DIR/wezterm" ]; then
+  if [ -d "$DOTFILES_DIR/kitty" ]; then
     if [ "${is_wsl:-false}" = true ]; then
-      echo "Skipping wezterm symlink on WSL because it was copied earlier."
+      echo "Skipping kitty symlink on WSL (kitty runs natively, not in WSL)."
     else
-      ln_link "$DOTFILES_DIR/wezterm" "$HOME/.config/wezterm"
+      ln_link "$DOTFILES_DIR/kitty" "$HOME/.config/kitty"
     fi
   fi
 
