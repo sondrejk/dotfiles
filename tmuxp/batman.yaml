@@ -1,0 +1,15 @@
+session_name: batman-manet
+
+windows:
+  - window_name: neovim
+    start_directory: ~/repos/ffi/batman-manet
+    panes:
+      - nvim
+  - window_name: claude
+    start_directory: ~/repos/ffi/batman-manet
+    panes:
+      - claude
+  - window_name: shell
+    start_directory: ~/repos/ffi/batman-manet
+    panes:
+      - blank
