@@ -11,6 +11,7 @@ if [[ -o interactive && -t 0 && -t 1 && -z "$TMUX" && "$TERM" != screen* && "$TE
 fi
 
 # Environment
+export DOCKER_BUILDKIT=1
 export EDITOR='nvim'
 export PASSWORD_STORE_DIR="$HOME/repos/webkom/password-store"
 export PYENV_ROOT="$HOME/.pyenv"
@@ -71,7 +72,7 @@ alias lg='lazygit'
 alias ld='lazydocker'
 alias j='z'
 alias xclip='xclip -selection c'
-alias mux='tmuxinator'
+alias mux='tmuxp load'
 alias tmuxconf="$EDITOR ~/.tmux.conf"
 alias zshconf="$EDITOR ~/.zshrc"
 alias kittyconf="$EDITOR ~/.config/kitty/kitty.conf"

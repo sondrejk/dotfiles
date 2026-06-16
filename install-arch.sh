@@ -194,6 +194,7 @@ packages_common=(
   docker
   docker-compose
   tmux
+  tmuxp
   fd
   poetry
   npm
@@ -347,8 +348,8 @@ if confirm "Proceed with symlinking dotfiles (existing files will be backed up w
     fi
   fi
 
-  if [ -d "$DOTFILES_DIR/tmuxinator" ]; then
-    ln_link "$DOTFILES_DIR/tmuxinator" "$HOME/.config/tmuxinator"
+  if [ -d "$DOTFILES_DIR/tmuxp" ]; then
+    ln_link "$DOTFILES_DIR/tmuxp" "$HOME/.config/tmuxp"
   fi
 
   if [ -d "$DOTFILES_DIR/fastfetch" ]; then

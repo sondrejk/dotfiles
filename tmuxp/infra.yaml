@@ -1,0 +1,9 @@
+session_name: infra
+
+windows:
+  - window_name: infrastructure
+    start_directory: ~/repos/webkom/infrastructure
+    layout: main-vertical
+    panes:
+      - blank
+      - shell_command: ssh infra
