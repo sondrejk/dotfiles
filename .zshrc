@@ -8,7 +8,8 @@ if [[ -o interactive && -t 0 && -t 1 && -z "$TMUX" && "$TERM" != screen* && "$TE
   tmux attach-session -t main || tmux new-session -s main
 fi
 # Environment
-export EDITOR='vim'
+export DOCKER_BUILDKIT=1
+export EDITOR='nvim'
 export PASSWORD_STORE_DIR="$HOME/repos/webkom/password-store"
 export PYENV_ROOT="$HOME/.pyenv"
 export ZSH="$HOME/.oh-my-zsh"
@@ -65,11 +66,14 @@ alias lg='lazygit'
 alias ld='lazydocker'
 alias j='z'
 alias xclip='xclip -selection c'
-alias mux='tmuxinator'
+alias mux='tmuxp load'
 alias tmuxconf="$EDITOR ~/.tmux.conf"
 alias zshconf="$EDITOR ~/.zshrc"
+alias kittyconf="$EDITOR ~/.config/kitty/kitty.conf"
 alias mkdir='mkdir -p'
 alias cpwez='cp -r ~/repos/personal/dotfiles/wezterm /mnt/c/Users/sondr/.config'
+# Kubectl aliases
+[ -f ~/.config/zsh/kubectl_aliases ] && source ~/.config/zsh/kubectl_aliases
 # Directory navigation shortcuts
 alias ..='cd ..'
 alias ...='cd ../..'

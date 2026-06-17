@@ -1,0 +1,20 @@
+session_name: lego
+
+windows:
+  - window_name: lego-webapp
+    start_directory: ~/repos/webkom/lego-webapp/
+    layout: main-vertical
+    panes:
+      - blank
+      - shell_command:
+          - pnpm i
+          - pnpm dev
+  - window_name: lego
+    start_directory: ~/repos/webkom/lego
+    layout: main-vertical
+    panes:
+      - blank
+      - shell_command:
+          - source .venv/bin/activate
+          - docker compose up -d
+          - python manage.py runserver
