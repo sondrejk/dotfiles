@@ -25,7 +25,7 @@ To manually re-symlink without reinstalling packages, find the `ln_link` block i
 | `nvim/` | `~/.config/nvim` |
 | `kitty/` | `~/.config/kitty` (native only — kitty is not used on WSL) |
 | `wezterm/` | WSL only — copied to `/mnt/c/Users/sondr/.config/wezterm` by the install script |
-| `tmuxinator/` | `~/.config/tmuxinator` |
+| `tmuxp/` | `~/.config/tmuxp` |
 | `fastfetch/` | `~/.config/fastfetch` |
 | `.zshrc` | `~/.zshrc` |
 | `.gitconfig` | `~/.gitconfig` |
@@ -61,7 +61,7 @@ Zsh auto-attaches to (or creates) a session named `main` on every new terminal.
 
 - Oh My Zsh with powerlevel10k theme
 - Plugins: git, sudo, ssh-agent, docker, fzf, zoxide, pyenv
-- Key aliases: `lg` → lazygit, `ld` → lazydocker, `j` → zoxide jump, `l`/`ls`/`ll`/`lt` → eza variants, `mux` → tmuxinator
+- Key aliases: `lg` → lazygit, `ld` → lazydocker, `j` → zoxide jump, `l`/`ls`/`ll`/`lt` → eza variants, `mux <navn>` → `tmuxp load <navn>`
 - pyenv and nvm are initialized lazily if present
 
 ## Kitty (native)

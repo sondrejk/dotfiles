@@ -1,0 +1,14 @@
+session_name: dot
+
+start_directory: ~/repos/personal/dotfiles
+
+windows:
+  - window_name: neovim
+    panes:
+      - nvim
+  - window_name: claude
+    panes:
+      - claude
+  - window_name: shell
+    panes:
+      - blank
