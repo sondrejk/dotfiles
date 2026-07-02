@@ -39,6 +39,8 @@ plugins=(
   pyenv
 )
 
+ENABLE_CORRECTION="true"
+
 # SSH agent config
 zstyle :omz:plugins:ssh-agent agent-forwarding yes
 zstyle :omz:plugins:ssh-agent identities \
@@ -57,6 +59,8 @@ source "$ZSH/oh-my-zsh.sh"
 if command -v pyenv >/dev/null 2>&1; then
   eval "$(pyenv init - zsh)"
 fi
+
+eval $(thefuck --alias)
 
 # Powerlevel10k config
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
