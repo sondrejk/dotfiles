@@ -1,0 +1,22 @@
+session_name: sched
+
+windows:
+  - window_name: neovim
+    start_directory: ~/repos/ffi/master_thesis
+    panes:
+      - nvim
+  - window_name: claude
+    start_directory: ~/repos/ffi/master_thesis
+    panes:
+      - claude
+  - window_name: shell
+    start_directory: ~/repos/ffi/master_thesis
+    panes:
+      - blank
+  - window_name: scheduler
+    start_directory: ~/repos/ffi/master_thesis/k8_scheduler
+    layout: main-vertical
+    panes:
+      - shell_command: go build -o schedulerbin . && ./schedulerbin ../k8_deployment/deployments/k3s.yaml common/config.yaml
+      - shell_command: "while latest=$(inotifywait -e create --format '%f' output/ 2>/dev/null); do [[ \"$latest\" == *.gv ]] && dot -Tpng \"output/$latest\" -o output/latest.png; done"
+      - shell_command: feh --reload 10 --zoom 50 output/latest.png
