@@ -34,7 +34,7 @@ plugins=(
   vi-mode
 )
 
-ENABLE_CORRECTION="true"
+# ENABLE_CORRECTION="true"
 
 # SSH agent config
 zstyle :omz:plugins:ssh-agent agent-forwarding yes
@@ -50,6 +50,7 @@ source "$ZSH/oh-my-zsh.sh"
 # vi-mode settings (must come after sourcing oh-my-zsh.sh)
 export KEYTIMEOUT=1
 VI_MODE_SET_CURSOR=true
+bindkey '^R' fzf-history-widget
 
 # Optional external tools
 [[ -r /usr/share/nvm/init-nvm.sh ]] && source /usr/share/nvm/init-nvm.sh
@@ -57,7 +58,7 @@ if command -v pyenv >/dev/null 2>&1; then
   eval "$(pyenv init - zsh)"
 fi
 
-eval $(thefuck --alias)
+# eval $(thefuck --alias)
 
 # Powerlevel10k config
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
@@ -88,3 +89,15 @@ alias .4='cd ../../../..'
 alias .5='cd ../../../../..'
 # Use kitty ssh kitten when running inside kitty (forwards terminfo, shell integration, etc.)
 [[ "$TERM" == "xterm-kitty" ]] && alias ssh="kitty +kitten ssh"
+# Functions
+ghclone() {
+  local repo
+  {
+    # your personal repos
+    gh repo list --limit 1000 --json nameWithOwner --jq '.[].nameWithOwner'
+    # repos from every org you're a member of
+    gh api user/orgs --jq '.[].login' | while read -r org; do
+      gh repo list "$org" --limit 1000 --json nameWithOwner --jq '.[].nameWithOwner'
+    done
+  } | sort -u | fzf | { read -r repo; [ -n "$repo" ] && print -z "git clone git@github.com:${repo}.git"; }
+}
