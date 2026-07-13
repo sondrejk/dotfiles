@@ -52,6 +52,13 @@ export KEYTIMEOUT=1
 VI_MODE_SET_CURSOR=true
 bindkey '^R' fzf-history-widget
 
+# vi-mode switches the active keymap, which drops the default emacs-only
+# ^X^E binding for edit-command-line — rebind it for viins/vicmd
+autoload -Uz edit-command-line
+zle -N edit-command-line
+bindkey -M viins '^X^E' edit-command-line
+bindkey -M vicmd '^X^E' edit-command-line
+
 # Optional external tools
 [[ -r /usr/share/nvm/init-nvm.sh ]] && source /usr/share/nvm/init-nvm.sh
 if command -v pyenv >/dev/null 2>&1; then
