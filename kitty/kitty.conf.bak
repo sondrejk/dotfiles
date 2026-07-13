@@ -21,6 +21,6 @@ shell_integration enabled
 
 
 # BEGIN_KITTY_THEME
-# Gruvbox Material Dark Hard
+# Gruvbox Material Dark Medium
 include current-theme.conf
 # END_KITTY_THEME
