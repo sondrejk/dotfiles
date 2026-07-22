@@ -19,6 +19,7 @@ path=(
   "$HOME/.local/bin"
   "$HOME/.local/share/pipx/venvs/ansible-core/bin"
   "$PYENV_ROOT/bin"
+  "$PYENV_ROOT/shims"
   $path
 )
 # Oh My Zsh
@@ -63,6 +64,12 @@ bindkey -M vicmd '^X^E' edit-command-line
 [[ -r /usr/share/nvm/init-nvm.sh ]] && source /usr/share/nvm/init-nvm.sh
 if command -v pyenv >/dev/null 2>&1; then
   eval "$(pyenv init - zsh)"
+fi
+if command -v direnv >/dev/null 2>&1; then
+  eval "$(direnv hook zsh)"
+fi
+if command -v atuin >/dev/null 2>&1; then
+  eval "$(atuin init zsh)"
 fi
 
 # eval $(thefuck --alias)
@@ -109,6 +116,39 @@ ghclone() {
   } | sort -u | fzf | { read -r repo; [ -n "$repo" ] && print -z "git clone git@github.com:${repo}.git"; }
 }
 
+reposcan() {
+  local dir="${1:-$HOME/repos}"
+
+  fd -H -t d -a '^\.git$' "$dir" 2>/dev/null | while IFS= read -r gitdir; do
+    local repo="${gitdir%/}"
+    repo="${repo%/.git}"
+    (
+      cd "$repo" || exit
+      local status_lines=""
+
+      if [[ -n "$(git status --porcelain 2>/dev/null)" ]]; then
+        status_lines+="uncommitted changes"
+      fi
+
+      if git rev-parse --symbolic-full-name '@{u}' &>/dev/null; then
+        local ahead
+        ahead=$(git rev-list --count '@{u}..HEAD' 2>/dev/null)
+        if [[ "$ahead" -gt 0 ]]; then
+          [[ -n "$status_lines" ]] && status_lines+=", "
+          status_lines+="$ahead commit(s) not pushed"
+        fi
+      else
+        [[ -n "$status_lines" ]] && status_lines+=", "
+        status_lines+="no upstream branch"
+      fi
+
+      [[ -n "$status_lines" ]] && echo "${repo/#$HOME/~}: $status_lines"
+    )
+  done
+}
+
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+export PRISMLAUNCHER_DATA_DIR="$HOME/sync/minecraft"
