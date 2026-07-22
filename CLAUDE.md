@@ -29,8 +29,8 @@ To manually re-symlink without reinstalling packages, find the `ln_link` block i
 | `fastfetch/` | `~/.config/fastfetch` |
 | `.zshrc` | `~/.zshrc` |
 | `.gitconfig` | `~/.gitconfig` |
-
-`.tmux.conf` and `.vimrc` are not symlinked by the script — copy or symlink them manually if needed.
+| `.tmux.conf` | `~/.tmux.conf` |
+| `.vimrc` | `~/.vimrc` |
 
 ## Neovim
 
