@@ -3,6 +3,10 @@ set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+LOG_FILE="/tmp/install-arch-$(date +%Y%m%d-%H%M%S).log"
+exec > >(tee -a "$LOG_FILE") 2>&1
+echo "Logging full output to $LOG_FILE"
+
 FAILED_PACKAGES=()
 FAILED_REASONS=()
 
@@ -23,17 +27,23 @@ record_failure() {
 }
 
 install_yay() {
+	if command -v yay &>/dev/null; then
+		echo "yay already installed — skipping."
+		return 0
+	fi
+
 	echo "Installing base-devel and git (needed for building AUR packages)..."
 	sudo pacman -S --needed --noconfirm base-devel git
 
+	local tmpdir
 	tmpdir=$(mktemp -d)
+	trap 'rm -rf "$tmpdir"' EXIT
+
 	git clone https://aur.archlinux.org/yay.git "$tmpdir/yay"
 
 	pushd "$tmpdir/yay" >/dev/null
 	makepkg -si --noconfirm
 	popd >/dev/null
-
-	rm -rf "$tmpdir"
 }
 
 install_oh_my_zsh() {
@@ -92,8 +102,9 @@ setup_gitconfig() {
 	cfg_path="$DOTFILES_DIR/.gitconfig"
 
 	if [ -f "$cfg_path" ]; then
-		mv "$cfg_path" "$cfg_path.bak"
-		echo "Backed up existing $cfg_path -> $cfg_path.bak"
+		backup_path="$cfg_path.bak.$(date +%Y%m%d-%H%M%S)"
+		mv "$cfg_path" "$backup_path"
+		echo "Backed up existing $cfg_path -> $backup_path"
 	fi
 
 	cat >"$cfg_path" <<EOF
@@ -102,6 +113,13 @@ name = $git_name
 email = $git_email
 [core]
 editor = ${EDITOR:-vim}
+pager = delta
+[interactive]
+diffFilter = delta --color-only
+[delta]
+navigate = true
+side-by-side = true
+line-numbers = true
 EOF
 
 	echo "Wrote $cfg_path"
@@ -140,12 +158,8 @@ install_package() {
 
 	rm -f "$log_file"
 
-	if confirm "Continue installing the remaining packages?"; then
-		return 0
-	else
-		echo "Stopping package installation."
-		return 1
-	fi
+	echo "Continuing with the remaining packages — see the summary at the end for all failures."
+	return 0
 }
 
 install_packages() {
@@ -154,6 +168,89 @@ install_packages() {
 	for pkg in "$@"; do
 		install_package "$pkg" || break
 	done
+}
+
+resolve_vim_gvim_conflict() {
+	# gvim conflicts with vim (both provide vim-minimal). CachyOS's zsh config
+	# depends on the "vim" package name, but gvim Provides=vim, so removing
+	# vim first and letting gvim install right after keeps that dependency
+	# satisfied throughout.
+	if pacman -Qi vim &>/dev/null && ! pacman -Qi gvim &>/dev/null; then
+		echo "Removing 'vim' so 'gvim' (built with clipboard/GUI support) can replace it..."
+		sudo pacman -Rdd --noconfirm vim
+	fi
+}
+
+install_aur_extras() {
+	if ! command -v yay &>/dev/null; then
+		echo "yay not installed — skipping AUR-only package: lazysql"
+		return 0
+	fi
+
+	echo "Installing lazysql via yay (AUR)..."
+	if ! yay -S --needed --noconfirm lazysql; then
+		echo "Failed to install lazysql via yay."
+		record_failure "lazysql" "yay -S --needed --noconfirm lazysql failed"
+	fi
+}
+
+install_uv_tools() {
+	if ! command -v uv &>/dev/null; then
+		echo "uv not installed — skipping uv-based tool: posting"
+		return 0
+	fi
+
+	echo "Installing posting via 'uv tool install'..."
+	if ! uv tool install posting; then
+		echo "Failed to install posting via uv."
+		record_failure "posting" "uv tool install posting failed"
+	fi
+}
+
+setup_docker() {
+	if ! command -v docker &>/dev/null; then
+		return 0
+	fi
+
+	echo "Enabling and starting the docker service..."
+	sudo systemctl enable --now docker
+
+	if ! groups "$USER" | grep -qw docker; then
+		echo "Adding $USER to the docker group (log out and back in, or run 'newgrp docker', for this to take effect)..."
+		sudo usermod -aG docker "$USER"
+	fi
+}
+
+set_default_shell() {
+	local zsh_path current_shell
+
+	zsh_path="$(command -v zsh)"
+	if [ -z "$zsh_path" ]; then
+		echo "zsh not found on PATH — skipping default shell change."
+		return 0
+	fi
+
+	current_shell="$(getent passwd "$USER" | cut -d: -f7)"
+	if [ "$current_shell" = "$zsh_path" ]; then
+		echo "Default shell is already $zsh_path — skipping."
+		return 0
+	fi
+
+	echo "Changing default shell to $zsh_path (log out and back in, or restart your terminal, for it to take effect)..."
+	if ! chsh -s "$zsh_path" "$USER"; then
+		echo "Failed to change default shell automatically — run 'chsh -s $zsh_path' manually."
+	fi
+}
+
+setup_kitty_theme() {
+	local theme_conf="$HOME/.config/kitty/current-theme.conf"
+
+	if [ -f "$theme_conf" ] || ! command -v kitty &>/dev/null; then
+		return 0
+	fi
+
+	echo "Applying Gruvbox Dark kitty theme..."
+	kitty +kitten themes --reload-in=none "Gruvbox Dark" || echo "Failed to apply kitty theme automatically — run 'kitty +kitten themes' manually."
 }
 
 print_summary() {
@@ -200,6 +297,10 @@ packages_common=(
 	poetry
 	npm
 	yarn
+	base-devel
+	openssl
+	xz
+	tk
 	pyenv
 	lazygit
 	lazydocker
@@ -211,13 +312,34 @@ packages_common=(
 	github-cli
 	pass
 	pass-otp
-	gpg
+	gnupg
 	pnpm
-	tldr
 	unzip
 	xclip
 	qemu-full
-	thefuck
+	fastfetch
+	ncdu
+	duf
+	hyperfine
+	gping
+	direnv
+	just
+	entr
+	atuin
+	git-delta
+	glow
+	fx
+	yazi
+	tokei
+	procs
+	sd
+	lnav
+	httpie
+	doggo
+	rclone
+	jc
+	k9s
+	spotify-player
 )
 
 packages_wsl=(
@@ -239,12 +361,14 @@ packages_native=(
 	obsidian
 	bitwarden
 	steam
+	discord
+	godot
+	prismlauncher
 	btop
 	firefox
 	kitty
 	ffmpeg4.4
 	zenity
-	qemu-full
 	tailscale
 	gdb
 	valgrind
@@ -304,9 +428,19 @@ if [ "$rc_update" -ne 0 ]; then
 	fi
 fi
 
+resolve_vim_gvim_conflict
+
 echo
 echo "Installing selected packages one by one..."
 install_packages "${packages[@]}"
+
+install_aur_extras
+install_uv_tools
+setup_docker
+
+if confirm "Set zsh as your default login shell (chsh)?"; then
+	set_default_shell
+fi
 
 if [ "$is_wsl" = true ]; then
 	target_dir="/mnt/c/Users/sondr/.config"
@@ -322,7 +456,7 @@ fi
 echo
 echo "About to symlink selected dotfiles from $DOTFILES_DIR into your home directory."
 
-if confirm "Proceed with symlinking dotfiles (existing files will be backed up with .bak)?"; then
+if confirm "Proceed with symlinking dotfiles (existing files will be backed up with a timestamped .bak)?"; then
 	ln_link() {
 		src="$1"
 		dest="$2"
@@ -330,8 +464,9 @@ if confirm "Proceed with symlinking dotfiles (existing files will be backed up w
 		mkdir -p "$(dirname "$dest")"
 
 		if [ -e "$dest" ] && [ ! -L "$dest" ]; then
-			mv "$dest" "$dest.bak"
-			echo "Backed up $dest -> $dest.bak"
+			backup_dest="$dest.bak.$(date +%Y%m%d-%H%M%S)"
+			mv "$dest" "$backup_dest"
+			echo "Backed up $dest -> $backup_dest"
 		fi
 
 		ln -sfn "$src" "$dest"
@@ -347,6 +482,7 @@ if confirm "Proceed with symlinking dotfiles (existing files will be backed up w
 			echo "Skipping kitty symlink on WSL (kitty runs natively, not in WSL)."
 		else
 			ln_link "$DOTFILES_DIR/kitty" "$HOME/.config/kitty"
+			setup_kitty_theme
 		fi
 	fi
 
@@ -362,6 +498,14 @@ if confirm "Proceed with symlinking dotfiles (existing files will be backed up w
 		ln_link "$DOTFILES_DIR/.zshrc" "$HOME/.zshrc"
 	fi
 
+	if [ -f "$DOTFILES_DIR/.tmux.conf" ]; then
+		ln_link "$DOTFILES_DIR/.tmux.conf" "$HOME/.tmux.conf"
+	fi
+
+	if [ -f "$DOTFILES_DIR/.vimrc" ]; then
+		ln_link "$DOTFILES_DIR/.vimrc" "$HOME/.vimrc"
+	fi
+
 	if [ -f "$DOTFILES_DIR/.gitconfig" ]; then
 		ln_link "$DOTFILES_DIR/.gitconfig" "$HOME/.gitconfig"
 	fi
@@ -370,4 +514,5 @@ fi
 print_summary
 
 echo
-echo "Install script finished. Review backups (*.bak) if any were created."
+echo "Install script finished. Review backups (*.bak.*) if any were created."
+echo "Full log written to $LOG_FILE"
