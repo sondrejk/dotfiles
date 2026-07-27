@@ -117,8 +117,21 @@ ghclone() {
 }
 
 reposcan() {
+  setopt localoptions nomonitor
+  local do_fetch=0 max_jobs=8
+  local OPTIND opt
+  while getopts "fj:" opt; do
+    case "$opt" in
+      f) do_fetch=1 ;;
+      j) max_jobs="$OPTARG" ;;
+    esac
+  done
+  shift $((OPTIND - 1))
   local dir="${1:-$HOME/repos}"
 
+  echo "scanning repos..."
+
+  local running=0
   fd -H -t d -a '^\.git$' "$dir" 2>/dev/null | while IFS= read -r gitdir; do
     local repo="${gitdir%/}"
     repo="${repo%/.git}"
@@ -131,11 +144,19 @@ reposcan() {
       fi
 
       if git rev-parse --symbolic-full-name '@{u}' &>/dev/null; then
-        local ahead
+        [[ "$do_fetch" -eq 1 ]] && timeout 10 git fetch --quiet 2>/dev/null
+
+        local ahead behind
         ahead=$(git rev-list --count '@{u}..HEAD' 2>/dev/null)
+        behind=$(git rev-list --count 'HEAD..@{u}' 2>/dev/null)
+
         if [[ "$ahead" -gt 0 ]]; then
           [[ -n "$status_lines" ]] && status_lines+=", "
           status_lines+="$ahead commit(s) not pushed"
+        fi
+        if [[ "$behind" -gt 0 ]]; then
+          [[ -n "$status_lines" ]] && status_lines+=", "
+          status_lines+="$behind commit(s) behind"
         fi
       else
         [[ -n "$status_lines" ]] && status_lines+=", "
@@ -143,8 +164,14 @@ reposcan() {
       fi
 
       [[ -n "$status_lines" ]] && echo "${repo/#$HOME/~}: $status_lines"
-    )
+    ) &
+    (( running++ ))
+    if (( running >= max_jobs )); then
+      wait
+      running=0
+    fi
   done
+  wait
 }
 
 export NVM_DIR="$HOME/.nvm"
