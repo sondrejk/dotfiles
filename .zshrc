@@ -118,18 +118,22 @@ ghclone() {
 
 reposcan() {
   setopt localoptions nomonitor
-  local do_fetch=0 max_jobs=8
+  local do_fetch=0 verbose=0 max_jobs=8
   local OPTIND opt
-  while getopts "fj:" opt; do
+  while getopts "fvj:" opt; do
     case "$opt" in
       f) do_fetch=1 ;;
+      v) verbose=1 ;;
       j) max_jobs="$OPTARG" ;;
     esac
   done
   shift $((OPTIND - 1))
   local dir="${1:-$HOME/repos}"
 
-  echo "scanning repos..."
+  [[ "$do_fetch" -eq 1 ]] && echo "scanning ${dir/#$HOME/~} (fetching)..."
+
+  local results
+  results=$(mktemp)
 
   local running=0
   fd -H -t d -a '^\.git$' "$dir" 2>/dev/null | while IFS= read -r gitdir; do
@@ -137,10 +141,11 @@ reposcan() {
     repo="${repo%/.git}"
     (
       cd "$repo" || exit
-      local status_lines=""
+      local status_lines="" tags="scanned"
 
       if [[ -n "$(git status --porcelain 2>/dev/null)" ]]; then
         status_lines+="uncommitted changes"
+        tags+=" dirty"
       fi
 
       if git rev-parse --symbolic-full-name '@{u}' &>/dev/null; then
@@ -153,17 +158,20 @@ reposcan() {
         if [[ "$ahead" -gt 0 ]]; then
           [[ -n "$status_lines" ]] && status_lines+=", "
           status_lines+="$ahead commit(s) not pushed"
+          tags+=" ahead"
         fi
         if [[ "$behind" -gt 0 ]]; then
           [[ -n "$status_lines" ]] && status_lines+=", "
           status_lines+="$behind commit(s) behind"
+          tags+=" behind"
         fi
       else
         [[ -n "$status_lines" ]] && status_lines+=", "
         status_lines+="no upstream branch"
+        tags+=" noupstream"
       fi
 
-      [[ -n "$status_lines" ]] && echo "${repo/#$HOME/~}: $status_lines"
+      echo "$tags|${repo/#$HOME/~}|$status_lines" >> "$results"
     ) &
     (( running++ ))
     if (( running >= max_jobs )); then
@@ -172,6 +180,29 @@ reposcan() {
     fi
   done
   wait
+
+  local total=0 dirty=0 ahead_n=0 behind_n=0 noup=0
+  local tags name status_lines found=0
+  while IFS='|' read -r tags name status_lines; do
+    (( total++ ))
+    [[ "$tags" == *dirty* ]] && (( dirty++ ))
+    [[ "$tags" == *ahead* ]] && (( ahead_n++ ))
+    [[ "$tags" == *behind* ]] && (( behind_n++ ))
+    [[ "$tags" == *noupstream* ]] && (( noup++ ))
+    if [[ -n "$status_lines" ]]; then
+      echo "$name: $status_lines"
+      found=1
+    fi
+  done < "$results"
+  rm -f "$results"
+
+  if (( found == 0 )); then
+    echo "no changes found in ${dir/#$HOME/~} ($total repos scanned)"
+  fi
+
+  if (( verbose )); then
+    echo "scanned $total repos: $dirty dirty, $ahead_n ahead, $behind_n behind, $noup missing upstream"
+  fi
 }
 
 export NVM_DIR="$HOME/.nvm"
