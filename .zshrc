@@ -32,7 +32,6 @@ plugins=(
   fzf
   zoxide
   pyenv
-  vi-mode
 )
 
 # ENABLE_CORRECTION="true"
@@ -48,17 +47,11 @@ zstyle :omz:plugins:ssh-agent quiet yes
 zstyle :omz:plugins:ssh-agent lazy no
 source "$ZSH/oh-my-zsh.sh"
 
-# vi-mode settings (must come after sourcing oh-my-zsh.sh)
-export KEYTIMEOUT=1
-VI_MODE_SET_CURSOR=true
 bindkey '^R' fzf-history-widget
 
-# vi-mode switches the active keymap, which drops the default emacs-only
-# ^X^E binding for edit-command-line — rebind it for viins/vicmd
 autoload -Uz edit-command-line
 zle -N edit-command-line
-bindkey -M viins '^X^E' edit-command-line
-bindkey -M vicmd '^X^E' edit-command-line
+bindkey '^X^E' edit-command-line
 
 # Optional external tools
 [[ -r /usr/share/nvm/init-nvm.sh ]] && source /usr/share/nvm/init-nvm.sh
@@ -210,3 +203,4 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 export PRISMLAUNCHER_DATA_DIR="$HOME/sync/minecraft"
+
