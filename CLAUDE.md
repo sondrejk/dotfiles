@@ -20,17 +20,17 @@ To manually re-symlink without reinstalling packages, find the `ln_link` block i
 
 ## Symlink targets
 
-| Repo path | Symlinked to |
-|---|---|
-| `nvim/` | `~/.config/nvim` |
-| `kitty/` | `~/.config/kitty` (native only — kitty is not used on WSL) |
-| `wezterm/` | WSL only — copied to `/mnt/c/Users/sondr/.config/wezterm` by the install script |
-| `tmuxp/` | `~/.config/tmuxp` |
-| `fastfetch/` | `~/.config/fastfetch` |
-| `.zshrc` | `~/.zshrc` |
-| `.gitconfig` | `~/.gitconfig` |
-| `.tmux.conf` | `~/.tmux.conf` |
-| `.vimrc` | `~/.vimrc` |
+| Repo path    | Symlinked to                                                                    |
+| ------------ | ------------------------------------------------------------------------------- |
+| `nvim/`      | `~/.config/nvim`                                                                |
+| `kitty/`     | `~/.config/kitty` (native only — kitty is not used on WSL)                      |
+| `wezterm/`   | WSL only — copied to `/mnt/c/Users/sondr/.config/wezterm` by the install script |
+| `tmuxp/`     | `~/.config/tmuxp`                                                               |
+| `fastfetch/` | `~/.config/fastfetch`                                                           |
+| `.zshrc`     | `~/.zshrc`                                                                      |
+| `.gitconfig` | `~/.gitconfig`                                                                  |
+| `.tmux.conf` | `~/.tmux.conf`                                                                  |
+| `.vimrc`     | `~/.vimrc`                                                                      |
 
 ## Neovim
 
@@ -48,6 +48,7 @@ Lock file (`nvim/lazy-lock.json`) is committed so plugin versions are reproducib
 ## tmux
 
 Prefix is `C-a`. Key bindings:
+
 - `|` / `-` — split horizontally / vertically (preserves cwd)
 - `v` — enter copy mode; `v` to start selection, `y` to yank
 - `r` — reload `~/.tmux.conf`
