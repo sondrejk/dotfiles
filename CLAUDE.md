@@ -31,6 +31,37 @@ To manually re-symlink without reinstalling packages, find the `ln_link` block i
 | `.gitconfig` | `~/.gitconfig`                                                                  |
 | `.tmux.conf` | `~/.tmux.conf`                                                                  |
 | `.vimrc`     | `~/.vimrc`                                                                      |
+| `ai/AGENTS.md`     | `~/.claude/CLAUDE.md`                                                     |
+| `ai/bin/ai-skills` | `~/.local/bin/ai-skills`                                                  |
+
+## AI setup (`ai/`)
+
+Single source for AI agent configuration, kept provider-agnostic and synced to
+every machine through this repo.
+
+| Path            | Purpose                                                              |
+| --------------- | -------------------------------------------------------------------- |
+| `ai/AGENTS.md`  | Personal instructions for all projects. Symlinked to `~/.claude/CLAUDE.md` — Claude Code reads `CLAUDE.md`, not `AGENTS.md` |
+| `ai/skills/`    | Own skills, in git. One directory per skill, each with a `SKILL.md`  |
+| `ai/vendor/`    | Third-party skills — gitignored, regenerated from `ai/skills.txt`    |
+| `ai/skills.txt` | Manifest of external skills: `<repo> <path> <ref>`                   |
+| `ai/hooks/`     | Hook scripts referenced from `~/.claude/settings.json`               |
+| `ai/bin/ai-skills` | Sync/fetch script, symlinked onto `PATH`                          |
+
+```bash
+ai-skills sync    # symlink all skills into each provider's directory
+ai-skills fetch   # re-download everything in skills.txt, then sync
+ai-skills list    # show what is installed where
+```
+
+Skills are symlinked individually (not the whole directory) so own and vendored
+skills can live side by side under `~/.claude/skills`. Provider target
+directories are the `TARGETS` array at the top of `ai/bin/ai-skills`; targets
+that don't exist are skipped, so adding a provider is one line.
+
+Keep skills portable: only `name` and `description` in frontmatter, no
+provider names in the body, and details pushed into `references/` so `SKILL.md`
+stays short.
 
 ## Neovim
 

@@ -1,0 +1,143 @@
+#!/usr/bin/env bash
+# ai-skills — synk AI-skills fra dotfiles til hver providers skills-mappe.
+#
+#   ai-skills sync    symlink alle skills (egne + vendor) inn til providerne
+#   ai-skills fetch   hent eksterne skills fra ai/skills.txt, så sync
+#   ai-skills list    vis hva som er installert hvor
+#
+# Egne skills bor i ai/skills/ og er i git. Eksterne hentes til ai/vendor/,
+# som er gitignorert — ai/skills.txt er sannheten om hva som skal finnes der.
+
+set -euo pipefail
+
+# Følg symlinken: scriptet kjøres normalt via ~/.local/bin/ai-skills, men skal
+# alltid finne ai/-mappa i dotfiles.
+SELF="$(readlink -f "${BASH_SOURCE[0]}")"
+AI_DIR="$(cd "$(dirname "$SELF")/.." && pwd)"
+MANIFEST="$AI_DIR/skills.txt"
+VENDOR="$AI_DIR/vendor"
+CACHE="$AI_DIR/.cache"
+
+# Målmapper per provider. Mapper som ikke finnes fra før hoppes over, bortsett
+# fra Claude Code sin, som alltid opprettes. Legg til nye providere her — det er
+# hele integrasjonsjobben.
+TARGETS=(
+	"$HOME/.claude/skills"
+	"$HOME/.config/opencode/skill"
+)
+ALWAYS_CREATE="$HOME/.claude/skills"
+
+log() { printf '%s\n' "$*"; }
+die() {
+	printf 'ai-skills: %s\n' "$*" >&2
+	exit 1
+}
+
+# Alle skill-mapper: egne først, så vendor.
+skill_dirs() {
+	local d
+	for d in "$AI_DIR"/skills/*/ "$VENDOR"/*/; do
+		[ -f "${d}SKILL.md" ] || continue
+		printf '%s\n' "${d%/}"
+	done
+}
+
+sync() {
+	local target dir name found=0
+
+	for target in "${TARGETS[@]}"; do
+		if [ ! -d "$target" ] && [ "$target" != "$ALWAYS_CREATE" ]; then
+			log "hopper over $target (finnes ikke — provider ikke i bruk)"
+			continue
+		fi
+		mkdir -p "$target"
+
+		# Rydd symlinker som peker inn i dotfiles, samt døde lenker. Ekte mapper
+		# som ligger der fra før røres ikke.
+		find "$target" -maxdepth 1 -type l | while read -r link; do
+			resolved="$(readlink -f "$link" || true)"
+			if [ -z "$resolved" ] || [ ! -e "$link" ] || [[ "$resolved" == "$AI_DIR"/* ]]; then
+				rm -f "$link"
+			fi
+		done
+
+		found=0
+		while read -r dir; do
+			name="$(basename "$dir")"
+			if [ -e "$target/$name" ] && [ ! -L "$target/$name" ]; then
+				log "  ! $name finnes som ekte mappe i $target — hopper over"
+				continue
+			fi
+			ln -sfn "$dir" "$target/$name"
+			found=$((found + 1))
+		done < <(skill_dirs)
+
+		log "synket $found skills → $target"
+	done
+}
+
+fetch() {
+	[ -f "$MANIFEST" ] || die "fant ikke $MANIFEST"
+	command -v git >/dev/null || die "git kreves for fetch"
+
+	rm -rf "$VENDOR"
+	mkdir -p "$VENDOR" "$CACHE"
+
+	local repo path ref clone name
+	while read -r repo path ref _rest; do
+		case "${repo:-}" in '' | \#*) continue ;; esac
+		[ -n "${path:-}" ] || die "manglende sti for $repo i skills.txt"
+		ref="${ref:-main}"
+
+		clone="$CACHE/${repo//\//_}"
+		if [ ! -d "$clone" ]; then
+			git clone --quiet --filter=blob:none --no-checkout \
+				"https://github.com/$repo" "$clone" ||
+				die "klarte ikke klone $repo"
+		fi
+
+		git -C "$clone" fetch --quiet origin "$ref"
+		git -C "$clone" sparse-checkout set --no-cone "$path" >/dev/null
+		git -C "$clone" checkout --quiet FETCH_HEAD
+
+		[ -f "$clone/$path/SKILL.md" ] || die "$repo/$path har ingen SKILL.md"
+
+		name="$(basename "$path")"
+		cp -r "$clone/$path" "$VENDOR/$name"
+		log "hentet $name  ($repo/$path @ $ref)"
+	done <"$MANIFEST"
+
+	sync
+}
+
+list() {
+	log "kilde: $AI_DIR"
+	log
+	log "egne skills:"
+	find "$AI_DIR/skills" -mindepth 1 -maxdepth 1 -type d -printf '  %f\n' 2>/dev/null | sort
+	log
+	log "vendor (fra skills.txt):"
+	if [ -d "$VENDOR" ]; then
+		find "$VENDOR" -mindepth 1 -maxdepth 1 -type d -printf '  %f\n' 2>/dev/null | sort
+	else
+		log "  (tom — kjør: ai-skills fetch)"
+	fi
+	log
+	log "installert hos providerne:"
+	local target
+	for target in "${TARGETS[@]}"; do
+		[ -d "$target" ] || continue
+		log "  $target"
+		find "$target" -mindepth 1 -maxdepth 1 -printf '    %f\n' 2>/dev/null | sort
+	done
+}
+
+case "${1:-sync}" in
+sync) sync ;;
+fetch) fetch ;;
+list) list ;;
+-h | --help | help)
+	sed -n '2,10p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+	;;
+*) die "ukjent kommando '${1}' — bruk sync, fetch eller list" ;;
+esac

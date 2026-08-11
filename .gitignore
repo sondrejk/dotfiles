@@ -7,3 +7,7 @@ debug
 foo.*
 *.log
 data
+
+# AI: vendor-skills hentes med `ai/bin/ai-skills fetch`, ikke i git
+ai/vendor/
+ai/.cache/
