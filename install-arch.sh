@@ -509,6 +509,23 @@ if confirm "Proceed with symlinking dotfiles (existing files will be backed up w
 	if [ -f "$DOTFILES_DIR/.gitconfig" ]; then
 		ln_link "$DOTFILES_DIR/.gitconfig" "$HOME/.gitconfig"
 	fi
+
+	# AI-oppsett: instruksjonsfil, skills-synking og hooks.
+	# ai/AGENTS.md er provider-agnostisk; Claude Code leser bare CLAUDE.md,
+	# så den symlinkes på plass.
+	if [ -d "$DOTFILES_DIR/ai" ]; then
+		if [ -f "$DOTFILES_DIR/ai/AGENTS.md" ]; then
+			ln_link "$DOTFILES_DIR/ai/AGENTS.md" "$HOME/.claude/CLAUDE.md"
+		fi
+
+		if [ -x "$DOTFILES_DIR/ai/bin/ai-skills" ]; then
+			ln_link "$DOTFILES_DIR/ai/bin/ai-skills" "$HOME/.local/bin/ai-skills"
+
+			echo "Syncing AI skills into provider directories"
+			"$DOTFILES_DIR/ai/bin/ai-skills" sync ||
+				echo "ai-skills sync failed — run it by hand to see why"
+		fi
+	fi
 fi
 
 print_summary

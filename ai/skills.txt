@@ -1,0 +1,10 @@
+# External skills, fetched into ai/vendor/ with `ai-skills fetch`.
+# vendor/ is gitignored; this file is the truth about what belongs there.
+#
+# Format:  <github-repo>  <path to the skill directory>  <ref>
+# Ref is optional (default: main). The directory must contain a SKILL.md.
+#
+# Examples, uncomment to use (paths verified 2026-08-11):
+# anthropics/skills   skills/pdf            main
+# anthropics/skills   skills/xlsx           main
+# anthropics/skills   skills/skill-creator  main
