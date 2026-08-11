@@ -8,3 +8,7 @@
 # anthropics/skills   skills/pdf            main
 # anthropics/skills   skills/xlsx           main
 # anthropics/skills   skills/skill-creator  main
+
+# Requires the draw.io desktop CLI on PATH (drawio-desktop-bin from the AUR).
+# Graphviz (dot) is optional, only for autolayout.
+Agents365-ai/drawio-skill   skills/drawio-skill   main
