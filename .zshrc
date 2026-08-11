@@ -98,15 +98,25 @@ alias .5='cd ../../../../..'
 [[ "$TERM" == "xterm-kitty" ]] && alias ssh="kitty +kitten ssh"
 # Functions
 ghclone() {
-  local repo
-  {
-    # your personal repos
-    gh repo list --limit 1000 --json nameWithOwner --jq '.[].nameWithOwner'
-    # repos from every org you're a member of
-    gh api user/orgs --jq '.[].login' | while read -r org; do
-      gh repo list "$org" --limit 1000 --json nameWithOwner --jq '.[].nameWithOwner'
-    done
-  } | sort -u | fzf | { read -r repo; [ -n "$repo" ] && print -z "git clone git@github.com:${repo}.git"; }
+  # every repo you can reach: your own, org repos, and ones shared with you as a collaborator
+  local selected
+  selected=$(
+    gh api --paginate -X GET /user/repos \
+      -f affiliation=owner,collaborator,organization_member \
+      -f sort=pushed -f per_page=100 \
+      --jq '.[].full_name' \
+      | awk '!seen[$0]++' \
+      | fzf --multi --prompt='clone> ' --header='tab/shift-tab to select multiple, enter to confirm'
+  ) || return
+
+  [[ -z "$selected" ]] && return
+
+  local cmds="" repo
+  while IFS= read -r repo; do
+    cmds+="git clone git@github.com:${repo}.git"$'\n'
+  done <<< "$selected"
+
+  print -z "${cmds%$'\n'}"
 }
 
 reposcan() {
