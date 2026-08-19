@@ -340,6 +340,7 @@ packages_common=(
 	jc
 	k9s
 	spotify-player
+	wl-clip-persist
 )
 
 packages_wsl=(
