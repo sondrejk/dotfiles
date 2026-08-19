@@ -53,19 +53,26 @@ docs/
 ├── 40-reference/         Reference, one file per surface (API, CLI, schema)
 ├── 50-troubleshooting.md Troubleshooting
 ├── 90-development.md     Procedure: build, test, release
-└── adr/                  Architecture Decision Records
+├── adr/                  Architecture Decision Records
+└── runbooks/             One file per incident symptom
 ```
 
 Steps of ten leave room to insert new files without renumbering.
 If a repo has no content for a level, leave the number unused.
 The gap is information in itself.
 
-`adr/` sits outside the numbering because it follows different rules.
+`adr/` and `runbooks/` sit outside the numbering because they follow different
+rules about time.
+
 The numbered files describe the current state and are kept up to date.
 An ADR records one decision at one point in time and is never edited after it is
-accepted.
-Decisions and their reasoning belong there, not in `00-overview.md`.
-Use the `adr` skill to write them.
+accepted, so decisions and their reasoning belong there, not in `00-overview.md`.
+A runbook is a living recipe for one incident symptom, updated every time someone
+uses it.
+
+Use the `adr` and `runbook` skills to write them.
+`50-troubleshooting.md` covers ordinary problems a user hits in normal use.
+Anything that happens during a production incident belongs in `runbooks/`.
 
 ## Modules: one type per file
 
