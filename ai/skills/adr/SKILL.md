@@ -16,7 +16,7 @@ Code always shows *what*. It never shows *why*.
 An ADR exists so the reasoning survives after the people who made the decision
 have left the project.
 
-Each ADR is one short markdown file, roughly 10 to 20 lines, numbered and
+Each ADR is one short markdown file, roughly 10 to 25 lines, numbered and
 checked into the repo at `docs/adr/NNNN-short-title.md`.
 
 ## Always ask before writing
@@ -83,6 +83,12 @@ Two to four sentences. Write it so someone with no history can follow.>
 
 <What was chosen. One or two sentences, in the active voice.>
 
+## Trade-offs
+
+<What this choice optimizes for, and what it gives up to get it. Name the
+sacrifice plainly: what would have been better under the rejected options,
+that we now do not have. One or two sentences.>
+
 ## Alternatives
 
 - **<Option>:** <why it was rejected>
@@ -97,11 +103,17 @@ What we accept as the cost.>
 ## Rules that make ADRs work
 
 **An accepted ADR is immutable.**
-Never edit the Context, Decision, Alternatives or Consequences of an accepted
-ADR, even when it turns out to be wrong.
+Never edit the Context, Decision, Trade-offs, Alternatives or Consequences of
+an accepted ADR, even when it turns out to be wrong.
 The only permitted edit is the status line.
 This is the opposite of normal documentation, where staleness is a defect.
 Here the record is the point.
+
+**The Trade-offs section names the sacrifice.**
+Every decision optimizes for something at the cost of something else. State
+plainly what is being given up, in the moment of choosing, so the trade is
+visible instead of assumed. This differs from Consequences, which covers what
+the choice locks in going forward, over time.
 
 **The Alternatives section is the whole value.**
 Most ADRs fail because they record only what was chosen.
