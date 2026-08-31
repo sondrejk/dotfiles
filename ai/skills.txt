@@ -12,3 +12,16 @@
 # Requires the draw.io desktop CLI on PATH (drawio-desktop-bin from the AUR).
 # Graphviz (dot) is optional, only for autolayout.
 Agents365-ai/drawio-skill   skills/drawio-skill   main
+
+# Any Supabase project (client libs, RLS, migrations, edge functions).
+supabase/agent-skills   skills/supabase                             main
+supabase/agent-skills   skills/supabase-postgres-best-practices     main
+
+# github/awesome-copilot: generic dev-workflow skills, verified 2026-08-14.
+github/awesome-copilot   skills/add-educational-comments      main
+github/awesome-copilot   skills/breakdown-test                main
+github/awesome-copilot   skills/code-tour                     main
+github/awesome-copilot   skills/commit-message-storyteller    main
+github/awesome-copilot   skills/context-map                   main
+# Best with Playwright MCP configured; falls back to manual inspection without it.
+github/awesome-copilot   skills/web-design-reviewer           main

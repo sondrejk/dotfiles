@@ -86,6 +86,10 @@ alias zshconf="$EDITOR ~/.zshrc"
 alias kittyconf="$EDITOR ~/.config/kitty/kitty.conf"
 alias mkdir='mkdir -p'
 alias cpwez='cp -r ~/repos/personal/dotfiles/wezterm /mnt/c/Users/sondr/.config'
+# docker aliases
+alias dcu='docker compose up -d'
+alias dcd='docker compose down'
+alias dcr='docker compose down && docker compose up -d'
 # Kubectl aliases
 [ -f ~/.config/zsh/kubectl_aliases ] && source ~/.config/zsh/kubectl_aliases
 # Directory navigation shortcuts
