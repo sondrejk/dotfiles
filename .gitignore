@@ -8,6 +8,9 @@ foo.*
 *.log
 data
 
-# AI: vendor-skills hentes med `ai/bin/ai-skills fetch`, ikke i git
+# AI: vendor skills are fetched with `ai/bin/ai-skills fetch`, not tracked in git
 ai/vendor/
 ai/.cache/
+
+# install-arch.sh: machine-local extra packages, not tracked in git
+packages.local.txt
