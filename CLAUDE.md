@@ -24,6 +24,7 @@ To manually re-symlink without reinstalling packages, find the `ln_link` block i
 | ------------ | ------------------------------------------------------------------------------- |
 | `nvim/`      | `~/.config/nvim`                                                                |
 | `kitty/`     | `~/.config/kitty` (native only — kitty is not used on WSL)                      |
+| `zathura/`   | `~/.config/zathura` (native only — no GUI PDF viewer on WSL)                    |
 | `wezterm/`   | WSL only — copied to `/mnt/c/Users/sondr/.config/wezterm` by the install script |
 | `tmuxp/`     | `~/.config/tmuxp`                                                               |
 | `fastfetch/` | `~/.config/fastfetch`                                                           |
