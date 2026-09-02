@@ -14,9 +14,19 @@ Run the interactive install script on a fresh Arch system:
 bash install-arch.sh
 ```
 
-It handles: yay/paru (AUR), oh-my-zsh, powerlevel10k, tpm (tmux plugin manager), optional .gitconfig creation, package installation, and symlinking configs. Pass `-y` or `--yes` to auto-confirm every prompt (unattended runs).
+It runs in stages: `aur`, `zsh`, `p10k`, `tpm`, `gitconfig`, `packages`, `shell`, `symlink`. Each stage (other than `packages`) prompts for confirmation before doing anything.
 
-To manually re-symlink without reinstalling packages, find the `ln_link` block in `install-arch.sh` and run those `ln -sfn` commands by hand.
+Useful flags (`bash install-arch.sh --help` for the full list):
+
+- `-y` / `--yes` — auto-confirm every prompt (unattended run)
+- `--dry-run` — print what would happen without changing anything
+- `--only=STAGE` / `--skip=STAGE` — run or skip a single stage, e.g. `--only=symlink` to re-symlink without touching packages
+- `--verify` — check symlinks, default shell and core tools against expectations, then exit
+- `--prune-backups[=N]` — list (and offer to delete) `*.bak.*` files older than N days (default 30)
+
+Machine-local extra packages go in a gitignored `packages.local.txt` in the repo root (one package name per line, `#` for comments) — appended to the install list without touching the tracked script.
+
+To manually re-symlink without reinstalling packages, run `bash install-arch.sh --only=symlink`, or find the `ln_link` block in `install-arch.sh` and run those `ln -sfn` commands by hand.
 
 ## Symlink targets
 
