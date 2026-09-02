@@ -23,10 +23,11 @@ Prerequisites:
 
 3. Open a new terminal.
 
-Verification: `ls -l ~/.zshrc` points into the dotfiles repo, and the prompt uses powerlevel10k.
+Verification: run `bash install-arch.sh --verify`, or check by hand that `ls -l ~/.zshrc` points into the dotfiles repo and the prompt uses powerlevel10k.
 
-The script installs yay, oh-my-zsh, powerlevel10k, tpm and the package list, then symlinks every config into place.
+The script installs yay/paru, oh-my-zsh, powerlevel10k, tpm and the package list, then symlinks every config into place.
 It skips what is already installed, so it is safe to run again.
+Pass `--dry-run` to preview a run, or `--help` for the full list of flags (unattended mode, running a single stage, pruning old `*.bak.*` files).
 The `ln_link` block in `install-arch.sh` is the source of truth for symlinks.
 
 `.gitconfig` is gitignored.
