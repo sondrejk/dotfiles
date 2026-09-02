@@ -341,6 +341,9 @@ packages_common=(
 	k9s
 	spotify-player
 	wl-clip-persist
+	pandoc-cli
+	texlive-latexextra
+	typst
 )
 
 packages_wsl=(
@@ -368,6 +371,8 @@ packages_native=(
 	btop
 	firefox
 	kitty
+	zathura
+	zathura-pdf-mupdf
 	ffmpeg4.4
 	zenity
 	tailscale
@@ -484,6 +489,14 @@ if confirm "Proceed with symlinking dotfiles (existing files will be backed up w
 		else
 			ln_link "$DOTFILES_DIR/kitty" "$HOME/.config/kitty"
 			setup_kitty_theme
+		fi
+	fi
+
+	if [ -d "$DOTFILES_DIR/zathura" ]; then
+		if [ "${is_wsl:-false}" = true ]; then
+			echo "Skipping zathura symlink on WSL (zathura runs natively, not in WSL)."
+		else
+			ln_link "$DOTFILES_DIR/zathura" "$HOME/.config/zathura"
 		fi
 	fi
 
