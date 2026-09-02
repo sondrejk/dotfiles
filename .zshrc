@@ -59,6 +59,10 @@ if command -v pyenv >/dev/null 2>&1; then
   eval "$(pyenv init - zsh)"
 fi
 if command -v direnv >/dev/null 2>&1; then
+  # Silence direnv's own "loading/export" lines: with p10k instant prompt,
+  # any console output during shell init triggers its "Console output
+  # detected" warning on every new shell.
+  export DIRENV_LOG_FORMAT=
   eval "$(direnv hook zsh)"
 fi
 if command -v atuin >/dev/null 2>&1; then
