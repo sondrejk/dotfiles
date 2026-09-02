@@ -346,11 +346,6 @@ packages_common=(
 	typst
 )
 
-packages_wsl=(
-	xdg-utils
-	vulkan-dzn
-)
-
 packages_native=(
 	ttf-jetbrains-mono-nerd
 	xorg-server
@@ -386,12 +381,6 @@ if confirm "Install yay (AUR helper)?"; then
 	install_yay
 fi
 
-if confirm "Are you running this on WSL Arch?"; then
-	is_wsl=true
-else
-	is_wsl=false
-fi
-
 if confirm "Install Oh My Zsh (clone only, will NOT overwrite ~/.zshrc)?"; then
 	install_oh_my_zsh
 fi
@@ -412,11 +401,7 @@ else
 	fi
 fi
 
-if [ "$is_wsl" = true ]; then
-	packages=("${packages_common[@]}" "${packages_wsl[@]}")
-else
-	packages=("${packages_common[@]}" "${packages_native[@]}")
-fi
+packages=("${packages_common[@]}" "${packages_native[@]}")
 
 echo
 echo "Updating package database..."
@@ -448,17 +433,6 @@ if confirm "Set zsh as your default login shell (chsh)?"; then
 	set_default_shell
 fi
 
-if [ "$is_wsl" = true ]; then
-	target_dir="/mnt/c/Users/sondr/.config"
-
-	if [ -d "$target_dir" ] || mkdir -p "$target_dir" 2>/dev/null; then
-		echo "Copying wezterm config to $target_dir"
-		cp -a "$DOTFILES_DIR/wezterm" "$target_dir/" || echo "Failed to copy wezterm — check permissions or path"
-	else
-		echo "WSL target $target_dir not found and could not be created — skipping wezterm copy"
-	fi
-fi
-
 echo
 echo "About to symlink selected dotfiles from $DOTFILES_DIR into your home directory."
 
@@ -484,20 +458,12 @@ if confirm "Proceed with symlinking dotfiles (existing files will be backed up w
 	fi
 
 	if [ -d "$DOTFILES_DIR/kitty" ]; then
-		if [ "${is_wsl:-false}" = true ]; then
-			echo "Skipping kitty symlink on WSL (kitty runs natively, not in WSL)."
-		else
-			ln_link "$DOTFILES_DIR/kitty" "$HOME/.config/kitty"
-			setup_kitty_theme
-		fi
+		ln_link "$DOTFILES_DIR/kitty" "$HOME/.config/kitty"
+		setup_kitty_theme
 	fi
 
 	if [ -d "$DOTFILES_DIR/zathura" ]; then
-		if [ "${is_wsl:-false}" = true ]; then
-			echo "Skipping zathura symlink on WSL (zathura runs natively, not in WSL)."
-		else
-			ln_link "$DOTFILES_DIR/zathura" "$HOME/.config/zathura"
-		fi
+		ln_link "$DOTFILES_DIR/zathura" "$HOME/.config/zathura"
 	fi
 
 	if [ -d "$DOTFILES_DIR/tmuxp" ]; then

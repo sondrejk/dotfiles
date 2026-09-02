@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo is
 
-Personal dotfiles for an Arch Linux setup (native and WSL). Config files are managed directly in this repo and symlinked into place by `install-arch.sh`.
+Personal dotfiles for a native Arch Linux setup. Config files are managed directly in this repo and symlinked into place by `install-arch.sh`.
 
 ## Setup / install
 
@@ -20,20 +20,19 @@ To manually re-symlink without reinstalling packages, find the `ln_link` block i
 
 ## Symlink targets
 
-| Repo path    | Symlinked to                                                                    |
-| ------------ | ------------------------------------------------------------------------------- |
-| `nvim/`      | `~/.config/nvim`                                                                |
-| `kitty/`     | `~/.config/kitty` (native only — kitty is not used on WSL)                      |
-| `zathura/`   | `~/.config/zathura` (native only — no GUI PDF viewer on WSL)                    |
-| `wezterm/`   | WSL only — copied to `/mnt/c/Users/sondr/.config/wezterm` by the install script |
-| `tmuxp/`     | `~/.config/tmuxp`                                                               |
-| `fastfetch/` | `~/.config/fastfetch`                                                           |
-| `.zshrc`     | `~/.zshrc`                                                                      |
-| `.gitconfig` | `~/.gitconfig`                                                                  |
-| `.tmux.conf` | `~/.tmux.conf`                                                                  |
-| `.vimrc`     | `~/.vimrc`                                                                      |
-| `ai/AGENTS.md`     | `~/.claude/CLAUDE.md`                                                     |
-| `ai/bin/ai-skills` | `~/.local/bin/ai-skills`                                                  |
+| Repo path    | Symlinked to           |
+| ------------ | ---------------------- |
+| `nvim/`      | `~/.config/nvim`       |
+| `kitty/`     | `~/.config/kitty`      |
+| `zathura/`   | `~/.config/zathura`    |
+| `tmuxp/`     | `~/.config/tmuxp`      |
+| `fastfetch/` | `~/.config/fastfetch`  |
+| `.zshrc`     | `~/.zshrc`             |
+| `.gitconfig` | `~/.gitconfig`         |
+| `.tmux.conf` | `~/.tmux.conf`         |
+| `.vimrc`     | `~/.vimrc`             |
+| `ai/AGENTS.md`     | `~/.claude/CLAUDE.md` |
+| `ai/bin/ai-skills` | `~/.local/bin/ai-skills` |
 
 ## AI setup (`ai/`)
 
@@ -104,7 +103,3 @@ Zsh auto-attaches to (or creates) a session named `main` on every new terminal.
 **First-time theme setup:** run `kitty +kitten themes`, search for "Gruvbox Dark", and confirm — this writes `~/.config/kitty/current-theme.conf` and adds the include to `kitty.conf`.
 
 SSH kitten is aliased automatically in `.zshrc` when `$TERM == xterm-kitty`, so plain `ssh` forwards kitty's terminfo and shell integration to the remote host.
-
-## WezTerm (WSL only)
-
-`wezterm/wezterm.lua` — used on Windows with WSL. Maximizes on startup, JetBrainsMono Nerd Font, Gruvbox Dark. The install script copies it to `/mnt/c/Users/sondr/.config/wezterm` on WSL; it is not installed or symlinked on native Arch.

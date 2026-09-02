@@ -1,6 +1,6 @@
 # dotfiles
 
-Personal configuration for Arch Linux, native and WSL: zsh, tmux, Neovim, kitty, WezTerm and AI agent setup.
+Personal configuration for native Arch Linux: zsh, tmux, Neovim, kitty and AI agent setup.
 
 ## Install
 
