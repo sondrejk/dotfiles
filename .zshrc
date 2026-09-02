@@ -86,6 +86,7 @@ alias zshconf="$EDITOR ~/.zshrc"
 alias kittyconf="$EDITOR ~/.config/kitty/kitty.conf"
 alias mkdir='mkdir -p'
 alias cpwez='cp -r ~/repos/personal/dotfiles/wezterm /mnt/c/Users/sondr/.config'
+alias klåd='claude'
 # docker aliases
 alias dcu='docker compose up -d'
 alias dcd='docker compose down'
