@@ -3,6 +3,20 @@ set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+if ! command -v pacman &>/dev/null; then
+	echo "This script requires pacman (Arch Linux or an Arch-based distro) — aborting." >&2
+	exit 1
+fi
+
+ASSUME_YES=false
+for arg in "$@"; do
+	case "$arg" in
+	-y | --yes) ASSUME_YES=true ;;
+	esac
+done
+
+CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+
 LOG_FILE="/tmp/install-arch-$(date +%Y%m%d-%H%M%S).log"
 exec > >(tee -a "$LOG_FILE") 2>&1
 echo "Logging full output to $LOG_FILE"
@@ -11,6 +25,11 @@ FAILED_PACKAGES=()
 FAILED_REASONS=()
 
 confirm() {
+	if [ "$ASSUME_YES" = true ]; then
+		echo "$1 [y/N]: y (auto-confirmed, --yes)"
+		return 0
+	fi
+
 	read -rp "$1 [y/N]: " ans
 	case "$ans" in
 	[Yy]*) return 0 ;;
@@ -27,8 +46,8 @@ record_failure() {
 }
 
 install_yay() {
-	if command -v yay &>/dev/null; then
-		echo "yay already installed — skipping."
+	if command -v yay &>/dev/null || command -v paru &>/dev/null; then
+		echo "AUR helper already installed ($(command -v yay || command -v paru)) — skipping."
 		return 0
 	fi
 
@@ -44,6 +63,9 @@ install_yay() {
 	pushd "$tmpdir/yay" >/dev/null
 	makepkg -si --noconfirm
 	popd >/dev/null
+
+	rm -rf "$tmpdir"
+	trap - EXIT
 }
 
 install_oh_my_zsh() {
@@ -58,7 +80,7 @@ install_oh_my_zsh() {
 }
 
 install_powerlevel10k() {
-	target="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
+	local target="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
 
 	if [ -d "$target" ]; then
 		echo "powerlevel10k already present at $target"
@@ -71,7 +93,7 @@ install_powerlevel10k() {
 }
 
 install_tpm() {
-	target="$HOME/.tmux/plugins/tpm"
+	local target="$HOME/.tmux/plugins/tpm"
 
 	if [ -d "$target" ]; then
 		echo "tpm already installed at $target"
@@ -85,6 +107,8 @@ install_tpm() {
 }
 
 setup_gitconfig() {
+	local default_name default_email git_name git_email cfg_path backup_path
+
 	default_name="$(git config --global user.name 2>/dev/null || true)"
 	default_email="$(git config --global user.email 2>/dev/null || true)"
 
@@ -165,16 +189,20 @@ install_package() {
 install_packages() {
 	local pkg
 
+	# install_package always returns 0 and records failures itself, so every
+	# package is attempted regardless of earlier ones failing.
 	for pkg in "$@"; do
-		install_package "$pkg" || break
+		install_package "$pkg"
 	done
 }
 
 resolve_vim_gvim_conflict() {
-	# gvim conflicts with vim (both provide vim-minimal). CachyOS's zsh config
-	# depends on the "vim" package name, but gvim Provides=vim, so removing
-	# vim first and letting gvim install right after keeps that dependency
-	# satisfied throughout.
+	# gvim conflicts with vim (both provide vim-minimal). Some Arch derivatives
+	# (e.g. CachyOS's zsh config) depend on the "vim" package name, but gvim
+	# Provides=vim, so removing vim first and letting gvim install right after
+	# keeps that dependency satisfied throughout.
+	# -dd skips dependency checks in both directions, which is safe only
+	# because gvim reinstates the "vim" name immediately afterwards.
 	if pacman -Qi vim &>/dev/null && ! pacman -Qi gvim &>/dev/null; then
 		echo "Removing 'vim' so 'gvim' (built with clipboard/GUI support) can replace it..."
 		sudo pacman -Rdd --noconfirm vim
@@ -182,15 +210,18 @@ resolve_vim_gvim_conflict() {
 }
 
 install_aur_extras() {
-	if ! command -v yay &>/dev/null; then
-		echo "yay not installed — skipping AUR-only package: lazysql"
+	local helper
+	helper="$(command -v yay || command -v paru || true)"
+
+	if [ -z "$helper" ]; then
+		echo "No AUR helper (yay/paru) installed — skipping AUR-only package: lazysql"
 		return 0
 	fi
 
-	echo "Installing lazysql via yay (AUR)..."
-	if ! yay -S --needed --noconfirm lazysql; then
-		echo "Failed to install lazysql via yay."
-		record_failure "lazysql" "yay -S --needed --noconfirm lazysql failed"
+	echo "Installing lazysql via $helper (AUR)..."
+	if ! "$helper" -S --needed --noconfirm lazysql; then
+		echo "Failed to install lazysql via $helper."
+		record_failure "lazysql" "$helper -S --needed --noconfirm lazysql failed"
 	fi
 }
 
@@ -243,7 +274,7 @@ set_default_shell() {
 }
 
 setup_kitty_theme() {
-	local theme_conf="$HOME/.config/kitty/current-theme.conf"
+	local theme_conf="$CONFIG_HOME/kitty/current-theme.conf"
 
 	if [ -f "$theme_conf" ] || ! command -v kitty &>/dev/null; then
 		return 0
@@ -438,15 +469,20 @@ echo "About to symlink selected dotfiles from $DOTFILES_DIR into your home direc
 
 if confirm "Proceed with symlinking dotfiles (existing files will be backed up with a timestamped .bak)?"; then
 	ln_link() {
-		src="$1"
-		dest="$2"
+		local src="$1"
+		local dest="$2"
+		local backup_dest
 
 		mkdir -p "$(dirname "$dest")"
 
-		if [ -e "$dest" ] && [ ! -L "$dest" ]; then
-			backup_dest="$dest.bak.$(date +%Y%m%d-%H%M%S)"
-			mv "$dest" "$backup_dest"
-			echo "Backed up $dest -> $backup_dest"
+		if [ -e "$dest" ] || [ -L "$dest" ]; then
+			if [ -L "$dest" ] && [ "$(readlink "$dest")" = "$src" ]; then
+				: # already linked correctly, nothing to back up
+			else
+				backup_dest="$dest.bak.$(date +%Y%m%d-%H%M%S)"
+				mv "$dest" "$backup_dest"
+				echo "Backed up $dest -> $backup_dest"
+			fi
 		fi
 
 		ln -sfn "$src" "$dest"
@@ -454,24 +490,24 @@ if confirm "Proceed with symlinking dotfiles (existing files will be backed up w
 	}
 
 	if [ -d "$DOTFILES_DIR/nvim" ]; then
-		ln_link "$DOTFILES_DIR/nvim" "$HOME/.config/nvim"
+		ln_link "$DOTFILES_DIR/nvim" "$CONFIG_HOME/nvim"
 	fi
 
 	if [ -d "$DOTFILES_DIR/kitty" ]; then
-		ln_link "$DOTFILES_DIR/kitty" "$HOME/.config/kitty"
+		ln_link "$DOTFILES_DIR/kitty" "$CONFIG_HOME/kitty"
 		setup_kitty_theme
 	fi
 
 	if [ -d "$DOTFILES_DIR/zathura" ]; then
-		ln_link "$DOTFILES_DIR/zathura" "$HOME/.config/zathura"
+		ln_link "$DOTFILES_DIR/zathura" "$CONFIG_HOME/zathura"
 	fi
 
 	if [ -d "$DOTFILES_DIR/tmuxp" ]; then
-		ln_link "$DOTFILES_DIR/tmuxp" "$HOME/.config/tmuxp"
+		ln_link "$DOTFILES_DIR/tmuxp" "$CONFIG_HOME/tmuxp"
 	fi
 
 	if [ -d "$DOTFILES_DIR/fastfetch" ]; then
-		ln_link "$DOTFILES_DIR/fastfetch" "$HOME/.config/fastfetch"
+		ln_link "$DOTFILES_DIR/fastfetch" "$CONFIG_HOME/fastfetch"
 	fi
 
 	if [ -f "$DOTFILES_DIR/.zshrc" ]; then
@@ -490,9 +526,9 @@ if confirm "Proceed with symlinking dotfiles (existing files will be backed up w
 		ln_link "$DOTFILES_DIR/.gitconfig" "$HOME/.gitconfig"
 	fi
 
-	# AI-oppsett: instruksjonsfil, skills-synking og hooks.
-	# ai/AGENTS.md er provider-agnostisk; Claude Code leser bare CLAUDE.md,
-	# så den symlinkes på plass.
+	# AI setup: instructions file, skills sync and hooks.
+	# ai/AGENTS.md is provider-agnostic; Claude Code only reads CLAUDE.md,
+	# so it gets symlinked into place.
 	if [ -d "$DOTFILES_DIR/ai" ]; then
 		if [ -f "$DOTFILES_DIR/ai/AGENTS.md" ]; then
 			ln_link "$DOTFILES_DIR/ai/AGENTS.md" "$HOME/.claude/CLAUDE.md"

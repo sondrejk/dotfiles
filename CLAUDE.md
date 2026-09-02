@@ -14,7 +14,7 @@ Run the interactive install script on a fresh Arch system:
 bash install-arch.sh
 ```
 
-It handles: yay (AUR), oh-my-zsh, powerlevel10k, tpm (tmux plugin manager), optional .gitconfig creation, package installation, and symlinking configs.
+It handles: yay/paru (AUR), oh-my-zsh, powerlevel10k, tpm (tmux plugin manager), optional .gitconfig creation, package installation, and symlinking configs. Pass `-y` or `--yes` to auto-confirm every prompt (unattended runs).
 
 To manually re-symlink without reinstalling packages, find the `ln_link` block in `install-arch.sh` and run those `ln -sfn` commands by hand.
 
