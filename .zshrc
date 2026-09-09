@@ -220,3 +220,16 @@ export NVM_DIR="$HOME/.nvm"
 export PATH="$HOME/.local/bin:$HOME/.local/npm-global/bin:$PATH"
 
 export PRISMLAUNCHER_DATA_DIR="$HOME/sync/minecraft"
+
+## Webkom's .zshrc-config
+webkom_dotfiles_dir='/home/sondrejk/repos/webkom/dotfiles'
+source $webkom_dotfiles_dir/.zshrc
+export PASSWORD_STORE_DIR="/home/sondrejk/repos/webkom/password-store"
+
+# Claude Code sudo gate: only inside a Claude Code shell (marked by
+# $CLAUDECODE), shadow sudo with a wrapper that requires a GUI Allow/Deny
+# per command instead of relying on sudo's timestamp cache. Prepended last
+# so it wins even if something sourced above also touches PATH.
+if [[ -n "$CLAUDECODE" ]]; then
+  export PATH="$HOME/.local/claude-bin:$PATH"
+fi
