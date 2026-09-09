@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# SUDO_ASKPASS helper for claude-sudo: prompts for the sudo password via a
+# GUI dialog instead of a tty, since Claude Code's shell has none.
+set -euo pipefail
+
+exec zenity --password --title="sudo password"
