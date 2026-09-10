@@ -68,11 +68,6 @@ fi
 if command -v atuin >/dev/null 2>&1; then
   eval "$(atuin init zsh)"
 fi
-# Only Claude Code shells get the GUI sudo-approval helper (CLAUDECODE is set
-# by the Claude Code CLI); manual terminals keep the normal password prompt.
-if [[ -n "$CLAUDECODE" ]] && command -v askpass >/dev/null 2>&1; then
-  export SUDO_ASKPASS="$(command -v askpass)"
-fi
 
 # eval $(thefuck --alias)
 
