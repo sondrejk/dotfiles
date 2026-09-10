@@ -39,6 +39,12 @@
 - Bash commands you want me to copy always go on their own line,
   with no characters in front of the command.
 
+## Sudo
+
+- Just run `sudo <command>` normally. A GUI popup shows the command and asks
+  me to Allow or Deny, then asks for the password. This works automatically
+  in any Claude Code shell, no setup needed.
+
 ## Documentation
 
 - Use the technical-documentation skill whenever you write documentation of any kind.
