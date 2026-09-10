@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Confirmation gate for sudo, active only inside Claude Code shells.
+#
+# This is not a general sudo replacement. It is only put on PATH ahead of
+# /usr/bin/sudo when $CLAUDECODE is set (see .zshrc), so a normal terminal
+# session is unaffected. Every invocation pops a GUI dialog showing the exact
+# command, requiring an explicit Allow before the real sudo (and its own
+# password prompt, via the paired askpass helper) ever runs. This exists
+# specifically so Claude never gets a silent multi-minute sudo grant: each
+# command is approved individually, regardless of sudo's own timestamp cache.
+set -euo pipefail
+
+REAL_SUDO="/usr/bin/sudo"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ASKPASS="$SCRIPT_DIR/claude-sudo-askpass"
+
+if [ -z "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]; then
+	echo "claude-sudo: no graphical session available to show the approval dialog, refusing." >&2
+	exit 1
+fi
+
+preview="$(printf 'Command:\n\n%s' "sudo $*")"
+
+if ! zenity --question \
+	--title="Claude Code wants sudo" \
+	--width=500 \
+	--text="$preview" \
+	--ok-label="Allow" \
+	--cancel-label="Deny"; then
+	echo "claude-sudo: denied via popup." >&2
+	exit 1
+fi
+
+exec env SUDO_ASKPASS="$ASKPASS" "$REAL_SUDO" -A "$@"

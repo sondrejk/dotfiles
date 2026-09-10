@@ -737,6 +737,8 @@ packages_common=(
 	wl-clip-persist
 	pandoc-cli
 	texlive-latexextra
+	texlive-binextra
+	biber
 	typst
 )
 
@@ -909,6 +911,17 @@ if should_run_stage symlink && confirm "Proceed with symlinking dotfiles (existi
 				"$DOTFILES_DIR/ai/bin/ai-skills" sync ||
 					log_warn "ai-skills sync failed — run it by hand to see why"
 			fi
+		fi
+
+		# Only on $HOME/.local/claude-bin, which .zshrc puts on PATH solely
+		# inside Claude Code shells (via $CLAUDECODE) — a normal terminal
+		# session keeps using the real /usr/bin/sudo untouched.
+		if [ -x "$DOTFILES_DIR/ai/bin/claude-sudo" ]; then
+			ln_link "$DOTFILES_DIR/ai/bin/claude-sudo" "$HOME/.local/claude-bin/sudo"
+		fi
+
+		if [ -x "$DOTFILES_DIR/ai/bin/claude-sudo-askpass" ]; then
+			ln_link "$DOTFILES_DIR/ai/bin/claude-sudo-askpass" "$HOME/.local/claude-bin/claude-sudo-askpass"
 		fi
 	fi
 
