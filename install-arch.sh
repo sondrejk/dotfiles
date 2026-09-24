@@ -877,6 +877,10 @@ if should_run_stage symlink && confirm "Proceed with symlinking dotfiles (existi
 		ln_link "$DOTFILES_DIR/fastfetch" "$CONFIG_HOME/fastfetch"
 	fi
 
+	if [ -d "$DOTFILES_DIR/direnv" ]; then
+		ln_link "$DOTFILES_DIR/direnv" "$CONFIG_HOME/direnv"
+	fi
+
 	if [ -f "$DOTFILES_DIR/.zshrc" ]; then
 		ln_link "$DOTFILES_DIR/.zshrc" "$HOME/.zshrc"
 	fi

@@ -37,6 +37,7 @@ To manually re-symlink without reinstalling packages, run `bash install-arch.sh 
 | `zathura/`   | `~/.config/zathura`    |
 | `tmuxp/`     | `~/.config/tmuxp`      |
 | `fastfetch/` | `~/.config/fastfetch`  |
+| `direnv/`    | `~/.config/direnv`     |
 | `.zshrc`     | `~/.zshrc`             |
 | `.gitconfig` | `~/.gitconfig`         |
 | `.tmux.conf` | `~/.tmux.conf`         |
