@@ -1,11 +1,14 @@
+# Auto-start tmux only in a real interactive terminal.
+# Must run before p10k instant-prompt below, which redirects stdin/stdout
+# and would make -t 0/-t 1 fail here whenever its cache is present.
+if [[ -o interactive && -t 0 && -t 1 && -z "$TMUX" ]]; then
+  exec tmux new-session -A -s main
+fi
+
 # Powerlevel10k instant prompt
 typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-fi
-# Auto-start tmux only in a real interactive terminal
-if [[ -o interactive && -t 0 && -t 1 && -z "$TMUX" && "$TERM" != screen* && "$TERM" != tmux* ]]; then
-  tmux attach-session -t main || tmux new-session -s main
 fi
 # Environment
 export DOCKER_BUILDKIT=1
