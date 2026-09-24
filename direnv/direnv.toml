@@ -1,0 +1,7 @@
+[global]
+# direnv only reads DIRENV_LOG_FORMAT (set in .zshrc) from the process env
+# when this file exists on disk, even with no [global] keys set - see
+# https://github.com/direnv/direnv/blob/v2.37.1/internal/cmd/config.go#L153-L159
+# Without this file, direnv falls back to its hardcoded log format no
+# matter what DIRENV_LOG_FORMAT is set to, which broke p10k's instant
+# prompt (console output during zsh init).
