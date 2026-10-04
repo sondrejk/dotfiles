@@ -131,23 +131,6 @@ ghclone() {
   print -z "${cmds%$'\n'}"
 }
 
-_studie_musikk() {
-  local uri=spotify:playlist:2sW28hQAUvky5XAgyl3s2I
-  local mpris=(gdbus call --session --dest org.mpris.MediaPlayer2.spotify
-    --object-path /org/mpris/MediaPlayer2 --method org.mpris.MediaPlayer2.Player.OpenUri)
-  if ! pgrep -x spotify >/dev/null; then
-    setsid spotify --minimized >/dev/null 2>&1 &!
-    # OpenUri only works once Spotify has registered on D-Bus
-    for _ in {1..30}; do
-      gdbus introspect --session --dest org.mpris.MediaPlayer2.spotify \
-        --object-path /org/mpris/MediaPlayer2 >/dev/null 2>&1 && break
-      sleep 1
-    done
-    sleep 2
-  fi
-  "${mpris[@]}" "$uri" >/dev/null 2>&1
-}
-
 studie() {
   # one study session in the learning vault: no argument or a course code is school,
   # `ny [beskrivelse]` plans a personal topic, a personal topic code studies it
@@ -160,7 +143,6 @@ studie() {
     dirs=(~/Downloads ~/Nextcloud/personlig/egne-studier ~/laber)
     prompt="/egen-okt $1"
   fi
-  ( _studie_musikk ) &!
   # -- stops the variadic --add-dir from swallowing the prompt as another directory
   claude --add-dir $dirs -- "$prompt"
 }
