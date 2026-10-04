@@ -4,8 +4,9 @@ description: >
   Ingest course sources (lecture slides, book chapters, notes as PDF) into the
   obsidian-laeringshvelv vault as short atomic concept notes with cropped figures, and file the
   PDF in Nextcloud. Called by `okt` at startup (new PDFs in ~/Downloads) or when the next
-  lecture in læreplan.md is not ingested. Use also when the user says "les inn", "innta" or
-  gives a PDF to ingest.
+  lecture in læreplan.md is not ingested. Also ingests modules of personal topics from the web,
+  books and Claude's own knowledge, called by `egen-okt`. Use also when the user says "les inn",
+  "innta" or gives a PDF to ingest.
 argument-hint: "[pdf-sti eller emnekode forelesning]"
 ---
 
@@ -22,6 +23,8 @@ Paths and course table: `_system/config.md`.
 - From `okt` startup: `/usr/bin/python3 _system/scripts/pdfverktoy.py nye`.
 - From the læreplan: the lecture's sources (Kilder column) in the course's source folder (Kilder in Stier in `config.md`). For a book, only the chapter pages the lecture covers (find them in the table of contents with `pdfverktoy.py tekst <pdf> 1 20`).
 - Derive the course from the file name and the first page. Ask only if it is ambiguous. Skip non-course PDFs (receipts, shipping labels) silently.
+- A PDF that belongs to a personal topic (a book for a code in "Personlige temaer"): file it as in "Personal topics" below and add it to that topic's sources, but do not ingest it now. It must never change the topic of a school session.
+- For a module in a personal topic, follow "Personal topics" at the end of this file.
 - Skip sections the course's `læreplan.md` lists as outside the syllabus.
 
 ## 2. Read the pages as images
@@ -102,3 +105,27 @@ For PDFs from `~/Downloads`:
 ## 8. Never reread
 
 A source recorded as `innlest` in læreplan.md is never read again in later sessions. Use the notes.
+
+## Personal topics
+
+Called from `egen-okt` with one module of `15 egne studier/<kode>/læreplan.md`. Steps 3, 5 and 8 apply unchanged. The rest changes as follows.
+
+**Sources, in this order:**
+1. The user's books in the topic's book folder (Bøker for personlige temaer in Stier in `config.md`). Read only the chapter the module covers, as page images (step 2).
+2. The anchor source in the læreplan, at the pinned version. Fetch the relevant pages with WebFetch.
+3. Other reputable sources when the anchor is thin: official docs, university course pages, textbooks. Find them with WebSearch. Avoid content farms and SEO blogs.
+4. Your own knowledge, to fill gaps and connect the pieces.
+
+If a fetched source and your memory disagree, the source at the pinned version wins. Note the difference as a pitfall if the user is likely to meet the old behaviour.
+
+**Notes:** the format in step 5, with `emner: [<kode>]`. Use the English term as the title when practitioners use it untranslated (`pod (Kubernetes)`, `ingress (Kubernetes)`), and write the note in Norwegian.
+One `**Kilde:**` line per source, so it is clear what comes from where:
+- `**Kilde:** <tittel>, <url> (versjon <x.y>, hentet <dato>)`
+- `**Kilde:** <boktittel>, s. <side>`
+- `**Kilde:** Claude (egen kunnskap)` for content not backed by a fetched source.
+
+**Figures:** from books as in step 4. From the web, only images with a free licence (Wikimedia Commons), saved to `90 vedlegg/figurer/<kode>/` with the licence in the Kilde line. For structures and flows (architecture, request paths, rock cycle), a Mermaid diagram in the note is often better.
+
+**Filing books** from `~/Downloads`: `pdfverktoy.py kopier-egen "<pdf>" <kode> <kode>-<forfatter>-<kort-tittel>.pdf`, then ask about deleting the original as in step 6. Add the book under `## Kilder` in the topic's læreplan.
+
+**State:** the module's row in the topic's læreplan gets the concepts, status `innlest`, and `innlest: <url | bok s. x-y>` in the Kilder column. New rows in `elevmodell.md` get the topic code in Emner. Rows written by the diagnostic test in `nytt-tema` already exist: keep them.
