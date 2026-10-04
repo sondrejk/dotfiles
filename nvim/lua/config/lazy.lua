@@ -18,6 +18,16 @@ require("lazy").setup({
   spec = {
     -- add LazyVim and import its plugins
     { "LazyVim/LazyVim", import = "lazyvim.plugins" },
+    -- HCL/Terraform support (overridden for OpenTofu in plugins/terraform.lua)
+    { import = "lazyvim.plugins.extras.lang.terraform" },
+    -- Ansible support (ansible-lint + ansible-language-server via mason)
+    { import = "lazyvim.plugins.extras.lang.ansible" },
+    -- YAML schema validation/completion (yamlls + SchemaStore)
+    { import = "lazyvim.plugins.extras.lang.yaml" },
+    -- Dockerfile + docker-compose LSP and linting (hadolint)
+    { import = "lazyvim.plugins.extras.lang.docker" },
+    -- TOML LSP (taplo)
+    { import = "lazyvim.plugins.extras.lang.toml" },
     -- import/override with your plugins
     { import = "plugins" },
   },
