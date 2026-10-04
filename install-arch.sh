@@ -585,12 +585,15 @@ verify_installation() {
 		["$CONFIG_HOME/zathura"]="$DOTFILES_DIR/zathura"
 		["$CONFIG_HOME/tmuxp"]="$DOTFILES_DIR/tmuxp"
 		["$CONFIG_HOME/fastfetch"]="$DOTFILES_DIR/fastfetch"
+		["$CONFIG_HOME/direnv"]="$DOTFILES_DIR/direnv"
 		["$HOME/.zshrc"]="$DOTFILES_DIR/.zshrc"
 		["$HOME/.tmux.conf"]="$DOTFILES_DIR/.tmux.conf"
 		["$HOME/.vimrc"]="$DOTFILES_DIR/.vimrc"
 		["$HOME/.gitconfig"]="$DOTFILES_DIR/.gitconfig"
 		["$HOME/.claude/CLAUDE.md"]="$DOTFILES_DIR/ai/AGENTS.md"
 		["$HOME/.local/bin/ai-skills"]="$DOTFILES_DIR/ai/bin/ai-skills"
+		["$HOME/.local/claude-bin/sudo"]="$DOTFILES_DIR/ai/bin/claude-sudo"
+		["$HOME/.local/claude-bin/claude-sudo-askpass"]="$DOTFILES_DIR/ai/bin/claude-sudo-askpass"
 	)
 
 	for dest in "${!expected_links[@]}"; do
@@ -800,7 +803,7 @@ packages_common=(
 	qpdf
 	tesseract
 	tesseract-data-eng
-	tldr
+	tealdeer
 	termshark
 	android-tools
 	wl-clipboard
