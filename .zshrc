@@ -149,11 +149,20 @@ _studie_musikk() {
 }
 
 studie() {
-  # one study session in the learning vault; an optional course code overrides the choice
+  # one study session in the learning vault: no argument or a course code is school,
+  # `ny [beskrivelse]` plans a personal topic, a personal topic code studies it
   cd ~/Documents/obsidian-laeringshvelv || return
+  local dirs=(~/Downloads ~/Nextcloud/skole) prompt="/okt${1:+ $1}"
+  if [[ $1 == ny ]]; then
+    dirs=(~/Downloads ~/Nextcloud/personlig/egne-studier ~/laber)
+    prompt="/nytt-tema${2:+ ${*:2}}"
+  elif [[ -n $1 && -d "15 egne studier/$1" ]]; then
+    dirs=(~/Downloads ~/Nextcloud/personlig/egne-studier ~/laber)
+    prompt="/egen-okt $1"
+  fi
   ( _studie_musikk ) &!
   # -- stops the variadic --add-dir from swallowing the prompt as another directory
-  claude --add-dir ~/Downloads ~/Nextcloud/skole -- "/okt${1:+ $1}"
+  claude --add-dir $dirs -- "$prompt"
 }
 
 reposcan() {

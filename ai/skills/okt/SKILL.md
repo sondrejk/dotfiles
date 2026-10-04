@@ -45,11 +45,14 @@ The session can die at any moment (terminal closed, usage limit, context compact
 
 1. `date '+%F %H:%M'`. This is the start time.
 2. Read `_system/config.md` and the last ~60 lines of `_system/logg.md`.
-3. **Unfinished session:** if a block has `Slutt: uavsluttet`:
+   If `$ARGUMENTS` is a code in "Personlige temaer", follow the `egen-okt` skill instead of this one. If it is neither a course code nor a personal topic, list both kinds of codes, say that `studie ny` plans a new topic, and stop.
+3. **Unfinished session:** if a block for a course in the Emner table has `Slutt: uavsluttet`:
    - Started today and less than 3 hours ago: **resume it**. Append `- gjenopptatt <tid>`, reread the block and `elevmodell.md`, and continue from the last event. If the last event is `- venter: ...`, ask exactly that question again first. Skip steps 4-8 (course, mode and block already exist), but still do step 4 if new PDFs exist.
    - Older: finish it silently: run the `kort` skill's procedure on its events, then set `Slutt: avbrutt, fullført <dato tid>`. Mention it in one line and start a new session.
+   - Unfinished blocks for personal topics belong to `egen-okt`. Finish them silently the same way only if they are older than 3 hours.
 4. **New sources:** `/usr/bin/python3 _system/scripts/pdfverktoy.py nye`. If it lists any, run the `innta` skill's procedure on them. The newly ingested material becomes today's topic, and its course becomes today's course unless the user gave one.
 5. **Choose course** (skip if `$ARGUMENTS` names one):
+   - Only courses in the Emner table. Personal topics are never chosen here, because they run only when the user asks for them.
    - Exclude courses whose "Aktiv fra" is in the future.
    - If `logg.md` already has a finished session today, exclude that course, unless it has an exam within 7 days.
    - Score each remaining course and pick the highest:
@@ -67,7 +70,7 @@ The session can die at any moment (terminal closed, usage limit, context compact
 
 ## 2. Oppvarming (max 5 minutes)
 
-- 5 questions: 3 from today's course, 2 from other active courses (interleaving). A course whose "Aktiv fra" is in the future only gets questions as the exception under the Emner table allows.
+- 5 questions: 3 from today's course, 2 from other active school courses (interleaving). Never personal topics. A course whose "Aktiv fra" is in the future only gets questions as the exception under the Emner table allows.
 - Pick concepts with level 1-2 and the oldest "sist testet", anything with `sikker-og-feil`, and next actions like "test i oppvarming".
 - Ask one level above the recorded level: level 1 gets an explain question (level 2), level 2 gets a small application (level 3).
 - Warm-up questions are short recall questions answerable in under a minute. Calculations and longer problems belong in the main part.
