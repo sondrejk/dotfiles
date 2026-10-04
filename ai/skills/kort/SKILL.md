@@ -27,19 +27,21 @@ Skip a candidate unless the session (or an earlier logged one) tested or explain
 
 - **Max 6 new cards per session** (`_system/config.md`).
 - **Max 300 active cards per course.** Check with `/usr/bin/python3 _system/scripts/kortstatus.py`.
-- **Activation:** every concept that reached level 2 or more in this session gets its note's tag switched from `#flashcards-vent/<domene>` to `#flashcards/<domene>`. Max 12 activated cards per session. Remaining concepts keep next action `aktiver kort` in `elevmodell.md` and are activated first in the next session.
+- **Activation:** every concept that reached level 2 or more in this session gets its note's tag switched from `#flashcards-vent/<domene>` to `#flashcards/<domene>`. Max 25 activated cards per session. Remaining concepts keep next action `aktiver kort` in `elevmodell.md` and are activated first in the next session.
 - Before switching a note's tag, check every card in it against the log: each fact must have been tested or explained. If one was not, keep the note waiting and set next action `gå gjennom <fact>, så aktiver kort`.
 - New cards for a concept that is still below level 2 go into the note but stay waiting (the note keeps `#flashcards-vent/`).
 
 ## 3. Card standard
 
 1. The question always states its context: course topic, algorithm or technology (`I MPI: ...`, `I ARM-assembly: ...`).
-2. One fact per card. The answer is preferably under 25 words and never more than two short sentences.
-3. Card types, in priority order: abbreviation → meaning (plus one line on what it is), definition, formula (with the symbols explained), notation, fact or rule. A "why" card only when the reason is a short fact the exam asks for.
-4. Never: yes/no questions, lists of more than 3 items, trivia, analogies, questions about what the lecture covered, or understanding that is better tested with a problem.
-5. Norwegian, with the English term in parentheses the first time it is used in the card.
-6. Correct. Check each card against the note and your subject knowledge.
-7. Order in the note follows dependencies: definitions and abbreviations first, then what builds on them.
+2. **Unambiguous:** if more than one answer could be right, the question names the variant (signed or unsigned, tree or graph search, ARM or RISC-V). Check this by asking yourself whether a correct but different answer exists.
+3. One fact per card. The answer is preferably under 25 words and never more than two short sentences.
+   The answer contains exactly what the question asks for, nothing more. A correct answer to the question must never be judged incomplete by extra facts in the answer. Put extra facts on their own card.
+4. Card types, in priority order: abbreviation → meaning (plus one line on what it is), definition, formula (with the symbols explained), notation, fact or rule. A "why" card only when the reason is a short fact the exam asks for.
+5. Never: yes/no questions, lists of more than 3 items, trivia, analogies, questions about what the lecture covered, references to other notes or concepts ("se roofline-modellen"), or understanding that is better tested with a problem.
+6. Norwegian, with the English term in parentheses the first time it is used in the card.
+7. Correct. Check each card against the note and your subject knowledge.
+8. Order in the note follows dependencies: definitions and abbreviations first, then what builds on them.
 
 ## 4. Format
 
