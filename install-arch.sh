@@ -383,43 +383,68 @@ resolve_vim_gvim_conflict() {
 	fi
 }
 
+aur_packages=(
+	lazysql
+	scala
+	drawio-desktop-bin
+	visual-studio-code-bin
+	zed-preview-bin
+)
+
+uv_tools=(
+	posting
+	harlequin
+	sqlit-tui
+)
+
 install_aur_extras() {
 	local helper
 	helper="$(command -v yay || command -v paru || true)"
 
 	if [ -z "$helper" ]; then
-		echo "No AUR helper (yay/paru) installed — skipping AUR-only package: lazysql"
+		echo "No AUR helper (yay/paru) installed — skipping AUR-only packages: ${aur_packages[*]}"
 		return 0
 	fi
 
-	if [ "$DRY_RUN" = true ]; then
-		log_info "[dry-run] would run: $helper -S --needed --noconfirm lazysql"
-		return 0
-	fi
+	local pkg
+	for pkg in "${aur_packages[@]}"; do
+		if [ "$DRY_RUN" = true ]; then
+			log_info "[dry-run] would run: $helper -S --needed --noconfirm $pkg"
+			continue
+		fi
 
-	echo "Installing lazysql via $helper (AUR)..."
-	if ! "$helper" -S --needed --noconfirm lazysql; then
-		log_error "Failed to install lazysql via $helper."
-		record_failure "lazysql" "$helper -S --needed --noconfirm lazysql failed"
-	fi
+		echo "Installing $pkg via $helper (AUR)..."
+		if ! "$helper" -S --needed --noconfirm "$pkg"; then
+			log_error "Failed to install $pkg via $helper."
+			record_failure "$pkg" "$helper -S --needed --noconfirm $pkg failed"
+		fi
+	done
 }
 
 install_uv_tools() {
 	if ! command -v uv &>/dev/null; then
-		echo "uv not installed — skipping uv-based tool: posting"
+		echo "uv not installed — skipping uv-based tools: ${uv_tools[*]}"
 		return 0
 	fi
 
-	if [ "$DRY_RUN" = true ]; then
-		log_info "[dry-run] would run: uv tool install posting"
-		return 0
-	fi
+	local tool
+	for tool in "${uv_tools[@]}"; do
+		if [ "$DRY_RUN" = true ]; then
+			log_info "[dry-run] would run: uv tool install $tool"
+			continue
+		fi
 
-	echo "Installing posting via 'uv tool install'..."
-	if ! uv tool install posting; then
-		log_error "Failed to install posting via uv."
-		record_failure "posting" "uv tool install posting failed"
-	fi
+		if uv tool list 2>/dev/null | grep -q "^$tool "; then
+			echo "$tool already installed via uv — skipping."
+			continue
+		fi
+
+		echo "Installing $tool via 'uv tool install'..."
+		if ! uv tool install "$tool"; then
+			log_error "Failed to install $tool via uv."
+			record_failure "$tool" "uv tool install $tool failed"
+		fi
+	done
 }
 
 setup_docker() {
@@ -456,7 +481,8 @@ set_default_shell() {
 	fi
 
 	current_shell="$(getent passwd "$USER" | cut -d: -f7)"
-	if [ "$current_shell" = "$zsh_path" ]; then
+	# /bin is a symlink to /usr/bin on Arch, so /bin/zsh and /usr/bin/zsh are the same shell
+	if [ "$(readlink -f "$current_shell")" = "$(readlink -f "$zsh_path")" ]; then
 		echo "Default shell is already $zsh_path — skipping."
 		return 0
 	fi
@@ -587,7 +613,7 @@ verify_installation() {
 	local zsh_path current_shell
 	zsh_path="$(command -v zsh || true)"
 	current_shell="$(getent passwd "$USER" | cut -d: -f7)"
-	if [ -n "$zsh_path" ] && [ "$current_shell" = "$zsh_path" ]; then
+	if [ -n "$zsh_path" ] && [ "$(readlink -f "$current_shell")" = "$(readlink -f "$zsh_path")" ]; then
 		echo "  OK    default shell is zsh"
 	else
 		echo "  FAIL  default shell is '$current_shell', expected '$zsh_path'"
@@ -740,6 +766,45 @@ packages_common=(
 	texlive-binextra
 	biber
 	typst
+	# Development toolchains and CLIs, kept identical on every machine
+	nodejs-lts-krypton
+	nvm
+	bun
+	rustup
+	jdk-openjdk
+	jdk17-openjdk
+	maven
+	luarocks
+	python-pip
+	python-hatch
+	python-pypdf
+	python-docx
+	python-playwright
+	prettier
+	openmpi
+	riscv64-elf-gcc
+	riscv64-elf-binutils
+	riscv64-linux-gnu-gcc
+	riscv64-linux-gnu-binutils
+	riscv64-linux-gnu-gdb
+	gtkwave
+	opentofu
+	ansible
+	sops
+	age
+	graphviz
+	plantuml
+	gnuplot
+	mdbook
+	tectonic
+	qpdf
+	tesseract
+	tesseract-data-eng
+	tldr
+	termshark
+	android-tools
+	wl-clipboard
+	xsel
 )
 
 packages_native=(
@@ -769,6 +834,8 @@ packages_native=(
 	tailscale
 	gdb
 	valgrind
+	sqlitebrowser
+	wireshark-qt
 )
 
 echo "This script will install packages and symlink dotfiles from: $DOTFILES_DIR"
