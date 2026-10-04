@@ -24,6 +24,7 @@ preview="$(printf 'Command:\n\n%s' "sudo $*")"
 if ! zenity --question \
 	--title="Claude Code wants sudo" \
 	--width=500 \
+	--no-markup \
 	--text="$preview" \
 	--ok-label="Allow" \
 	--cancel-label="Deny"; then

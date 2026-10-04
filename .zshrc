@@ -264,4 +264,7 @@ export PASSWORD_STORE_DIR="/home/sondrejk/repos/webkom/password-store"
 # so it wins even if something sourced above also touches PATH.
 if [[ -n "$CLAUDECODE" ]]; then
   export PATH="$HOME/.local/claude-bin:$PATH"
+  # Claude Code's Bash tool replays a snapshot of functions but not PATH, so
+  # the PATH line alone never reaches it.
+  sudo() { "$HOME/.local/claude-bin/sudo" "$@"; }
 fi

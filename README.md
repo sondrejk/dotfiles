@@ -46,18 +46,16 @@ Install them when you need them.
 | Package | Source | Needed for |
 | --- | --- | --- |
 | `vim-gruvbox-community` | AUR | The `colorscheme gruvbox` line in `.vimrc` |
-| `drawio-desktop-bin` | AUR | The drawio skill in `ai/vendor/` |
 | `gowall` | AUR | Recolouring the images in `wallpapers/` |
 | `spotify` | AUR | Desktop client. The script installs `spotify-player`, the TUI |
 | `xone-dkms` | extra | Xbox One controller |
-| `riscv64-elf-gcc`, `riscv64-elf-binutils` | extra | xv6 and RISC-V. `qemu-full` from the script provides the emulator |
 
 ```bash
-yay -S vim-gruvbox-community drawio-desktop-bin gowall spotify
+yay -S vim-gruvbox-community gowall spotify
 ```
 
 ```bash
-sudo pacman -S xone-dkms riscv64-elf-gcc riscv64-elf-binutils
+sudo pacman -S xone-dkms
 ```
 
 `pdf-flashcards` is a standalone script in this repo, not symlinked.
