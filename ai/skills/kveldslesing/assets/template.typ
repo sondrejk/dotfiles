@@ -29,8 +29,9 @@
 
 #set raw(theme: none)
 #show raw: set text(font: "DejaVu Sans Mono", size: 8.5pt, fill: rgb("#e6d3ad"))
+// Code blocks are capped at ~12 lines, so keeping each on one page costs little and keeps command and output together.
 #show raw.where(block: true): it => block(
-  width: 100%, fill: panel, inset: (x: 7pt, y: 6pt), radius: 3pt, breakable: true, it,
+  width: 100%, fill: panel, inset: (x: 7pt, y: 6pt), radius: 3pt, breakable: false, it,
 )
 #show raw.where(block: false): box.with(fill: panel, inset: (x: 2pt), outset: (y: 2pt), radius: 2pt)
 
@@ -47,14 +48,17 @@
 #show heading.where(level: 3): it => block(above: 1.3em, below: 0.6em, sticky: true, text(size: 11.5pt, it.body))
 
 // Blockquotes carry analogies and side notes, so they get a quiet panel instead of italics.
+// They are a few sentences long, and a panel split across pages reads as two notes.
 #show quote.where(block: true): it => block(
   width: 100%, fill: panel, inset: (left: 9pt, right: 7pt, y: 7pt), radius: 3pt,
-  stroke: (left: 2pt + accent), breakable: true, it.body,
+  stroke: (left: 2pt + accent), breakable: false, it.body,
 )
 
 #set table(inset: 5pt, stroke: 0.5pt + rule)
 #show table: set text(size: 9.5pt)
-#show figure.where(kind: table): set block(breakable: true)
+// Tables are at most 3 narrow columns, so a split table only costs the reader its header.
+#show figure.where(kind: table): set block(breakable: false)
+#show table: it => block(breakable: false, it)
 #show figure.caption: set text(size: 9pt, fill: muted)
 
 // Figures arrive at arbitrary sizes, so fit each inside the text width and a height cap.

@@ -16,3 +16,21 @@ end
 
 function Para(el) return image_only(el) end
 function Plain(el) return image_only(el) end
+
+-- A lead-in ending with ":" must not be stranded at the bottom of a page, apart from the code, table or list it introduces.
+local introduced = { CodeBlock = true, Table = true, Figure = true, BulletList = true, OrderedList = true }
+
+function Blocks(blocks)
+  local out = pandoc.Blocks({})
+  for i, b in ipairs(blocks) do
+    local nxt = blocks[i + 1]
+    if b.t == 'Para' and nxt and introduced[nxt.t] and pandoc.utils.stringify(b):match(':%s*$') then
+      out:insert(pandoc.RawBlock('typst', '#block(sticky: true)['))
+      out:insert(b)
+      out:insert(pandoc.RawBlock('typst', ']'))
+    else
+      out:insert(b)
+    end
+  end
+  return out
+end
