@@ -31,7 +31,7 @@ Also open the embedded images that belong to answers (use the Read tool on the i
 Work out:
 
 - **Are the questions in the note?** If the note contains the task text (e.g. "1. Explain how ..."), the PDF shows each question followed by its answer. If the note contains only answers (e.g. headings like "Oppgave 1a" followed by prose), the PDF contains only the answers, keeping the user's own labels.
-- **What is not part of the submission.** In this vault that is typically: YAML frontmatter, the `## Ting jeg lærte (kandidater til konseptnotater)` section, a bare `## Oppgaver` wrapper heading, links to the assignment PDF like `[[exercise_1.pdf]]`, progress notes to self ("Er på oppgave 1a 5/6", "TODO", "husk å ..."), and empty list items. Dropping these is a structural change, so it is allowed, but list what you drop in the final report. If you are unsure whether something is a note to self or part of an answer, keep it and ask.
+- **What is not part of the submission.** In this vault that is typically: YAML frontmatter, the `## Plan` checklist written by the `oving` skill, the `## Ting jeg lærte (kandidater til konseptnotater)` section, a bare `## Oppgaver` wrapper heading, links to the assignment PDF like `[[exercise_1.pdf]]`, progress notes to self ("Er på oppgave 1a 5/6", "TODO", "husk å ..."), and empty list items. Dropping these is a structural change, so it is allowed, but list what you drop in the final report. If you are unsure whether something is a note to self or part of an answer, keep it and ask.
 
 ### 2. Review the answers and give a heads-up before building
 
@@ -40,7 +40,7 @@ Check the answers the way a strict but fair teaching assistant would, looking on
 - a question or sub-question with no answer, or an answer that only covers part of what was asked (asked for three advantages, gave one; asked to "explain" and "list mistakes", only the drawing is there)
 - an answer that is clearly factually wrong, or a calculation that does not check out (redo the arithmetic)
 - an answer that answers a different question, or contradicts another answer or its own figure
-- leftover draft material that would look odd to a grader (notes to self, "??", half sentences)
+- leftover draft material that would look odd to a grader (notes to self, "??", half sentences), and any `<!-- UTKAST -->` marker, which means a draft the user has not gone through yet
 - an embedded image that cannot be found
 
 Do not flag style, tone, debatable judgement calls or minor wording.

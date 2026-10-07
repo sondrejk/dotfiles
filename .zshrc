@@ -156,6 +156,12 @@ studie() {
   claude --add-dir ~/Downloads ~/Nextcloud/skole -- "/okt${1:+ $1}"
 }
 
+oving() {
+  # guided work on a mandatory exercise; takes a course code, an exercise name or a PDF path
+  cd ~/Documents/obsidian-laeringshvelv || return
+  claude --add-dir ~/Downloads ~/Nextcloud/skole -- "/oving${*:+ $*}"
+}
+
 reposcan() {
   setopt localoptions nomonitor
   local do_fetch=0 verbose=0 max_jobs=8
