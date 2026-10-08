@@ -19,7 +19,7 @@ All user-facing text is Norwegian bokmål. Never use an em dash.
 
 **Display depends on where the user reads.** When Remote Control is active (a system reminder says the user can follow the conversation from another device, and `SendUserFile` is available), the user reads in claude.ai, which renders LaTeX: write math as `$...$` inline and `$$...$$` for display. Otherwise the user reads in the terminal, which does not render LaTeX: write math with Unicode and plain text (`h(n) ≤ h*(n)`, `S(p) = 1 / (f + (1 − f)/p)`, `O(n²)`, `Σᵢ CPIᵢ · nᵢ/n`, `x₁`, `√`, `∞`), with a code block for multi-line derivations, and never `$...$`. Notes and cards always use LaTeX, because Obsidian renders it.
 
-**Figures:** whenever you refer to a figure (a note's figure, an exam figure), show it, do not only name it. With Remote Control, send it with `SendUserFile` (`display: "render"`, `status: "normal"`): a Read result only shows a tiny thumbnail there. In the terminal, open it with Read, which shows it in the chat. Give the embed path as well, so the user can find it in Obsidian.
+**Figures:** whenever you refer to a figure (a note's figure, an exam figure), show it, do not only name it. With Remote Control, send it with `SendUserFile` (`display: "render"`, `status: "normal"`): a Read result only shows a tiny thumbnail there. In the terminal, open it in the image viewer with `/usr/bin/python3 _system/scripts/pdfverktoy.py vis <bilde.webp>`, because the terminal shows neither images nor Obsidian embeds. Give the path as well, so the user can find it in Obsidian.
 
 ## Files (vault root: `~/Documents/obsidian-laeringshvelv`)
 
