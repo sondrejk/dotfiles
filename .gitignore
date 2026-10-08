@@ -14,3 +14,4 @@ ai/.cache/
 
 # install-arch.sh: machine-local extra packages, not tracked in git
 packages.local.txt
+__pycache__/

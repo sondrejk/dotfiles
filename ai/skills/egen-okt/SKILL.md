@@ -1,7 +1,7 @@
 ---
 name: egen-okt
 description: >
-  Run one 45-minute study session on a personal topic (outside school) in the
+  Run one study session on a personal topic (outside school) in the
   obsidian-laeringshvelv vault: warm-up, new module material, problems or hands-on labs on this
   machine, learner model, flashcards and log. Started by `studie <kode>` as `/egen-okt <kode>`,
   where <kode> is a topic in the "Personlige temaer" table in `_system/config.md`. Use whenever
@@ -14,7 +14,7 @@ argument-hint: "<kode>"
 A session on a personal topic runs exactly like `okt`, except where this file says otherwise.
 **Read `../okt/SKILL.md` (relative to this skill's base directory) first**, and follow it with the changes below. Section numbers refer to `okt`.
 
-In short: the topic is given, the session is 45 minutes, modules replace lectures, milestones replace exams, and tools are learned in labs.
+In short: the topic is given, the session length is "Tidsbudsjett per personlig økt" in `config.md`, modules replace lectures, milestones replace exams, and tools are learned in labs.
 
 ## Files
 
@@ -42,7 +42,7 @@ In addition to the files in `okt`:
 4 questions, max 4 minutes: 3 from this topic and 1 from another active personal topic if one exists. Never school courses.
 Skip the warm-up when fewer than 3 concepts in this topic have level 1 or more, and log `- oppvarming hoppet over (for lite stoff)`.
 
-## 3. Hoveddel (rest of the 45 minutes)
+## 3. Hoveddel (rest of the session's pomodoros)
 
 **Split:** the Fordeling column in config (default 50/50). The "while the course is behind" rule in `okt` does not apply.
 
@@ -81,7 +81,7 @@ The user builds. Claude prepares the start state, breaks working setups for leve
 ## 5. Avslutning
 
 As in `okt`, with these changes:
-- Suggest wrapping up after 45 minutes instead of 90.
+- Pomodoros as in `okt`, but the count comes from "Tidsbudsjett per personlig økt".
 - The `kort` procedure uses the limits for personal topics.
 - Recompute "Neste tema" by the rule in the topic's `læreplan.md`.
 - Stop running lab containers (`docker stop`, by prefix) so they do not use resources. They keep their state for the next session. Say so in one line.

@@ -15,7 +15,7 @@ argument-hint: "[beskrivelse | revider <kode>]"
 Turn "I want to learn X" into a læreplan that `egen-okt` can run, the same way the course læreplaner drive `okt`.
 The user describes. You ask, research and decide. The user approves the plan once.
 
-All user-facing text is Norwegian bokmål. Never use an em dash. The terminal does not render LaTeX.
+All user-facing text is Norwegian bokmål. Never use an em dash. Math display follows the rule in `okt`: LaTeX when Remote Control is active, Unicode in the terminal.
 Ask one question per message. Propose answers where you can, so the user picks or corrects instead of writing from scratch.
 
 ## Files (vault root: `~/Documents/obsidian-laeringshvelv`)
@@ -36,7 +36,7 @@ Skip a question when the description already answers it.
 1. **Hvorfor:** curiosity, work, a certification, a concrete project.
 2. **Mål:** propose 2-4 goals phrased as things the user can do afterwards, derived from the why. Examples: "sette opp en webserver bak en reverse proxy med TLS", "forklare hvordan et norsk landskap ble formet når jeg går tur". Rewrite goals that cannot be observed ("kunne Kubernetes") until they can.
 3. **Dybde:** oversikt, arbeidskunnskap or dyp.
-4. **Tid:** sessions per week (one session is 45 min) and a horizon, if any.
+4. **Tid:** sessions per week (session length: "Tidsbudsjett per personlig økt" in `config.md`) and a horizon, if any.
 5. **Kilder brukeren har:** books, courses, docs. Book PDFs go in `~/Downloads`, and `innta` files them.
 6. **Praktisk arbeid,** only where it fits: labs on this machine for tools (the rules are in `egen-okt`), observation or field tasks for subjects. Never cloud accounts.
 
@@ -109,7 +109,7 @@ emne: <kode>
 
 **Hvorfor:** <one or two sentences>
 **Dybde:** <oversikt | arbeidskunnskap | dyp>
-**Tid:** <N> økter per uke à 45 min. Horisont: <dato | ingen>.
+**Tid:** <N> økter per uke. Horisont: <dato | ingen>.
 
 ## Mål
 1. <something the user can do>

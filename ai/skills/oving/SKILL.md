@@ -18,7 +18,7 @@ You guide, explain and check. You may also draft (see "Drafts"), because time ma
 
 All user-facing text is Norwegian bokmål. Never use an em dash.
 The hand-in itself is in the language of the task (usually English).
-The terminal does not render LaTeX: in chat, write math with Unicode (`y'' + 4y = g(t)`, `ℒ{u(t − a)} = e^(−as)/s`, `x₁`, `√`, `∫`), and use a code block for multi-line derivations.
+**Display depends on where the user reads.** When Remote Control is active (a system reminder says the user can follow the conversation from another device, and `SendUserFile` is available), the user reads in claude.ai, which renders LaTeX: write math as `$...$` inline and `$$...$$` for display. Otherwise the user reads in the terminal, which does not render LaTeX: write math with Unicode and plain text (`y'' + 4y = g(t)`, `ℒ{u(t − a)} = e^(−as)/s`, `x₁`, `√`, `∫`), with a code block for multi-line derivations. Figures follow the same split: `SendUserFile` with Remote Control, Read in the terminal.
 Markdown files the user hands in keep LaTeX.
 
 ## Separate from the study system

@@ -144,13 +144,14 @@ studie() {
     prompt="/egen-okt $1"
   fi
   # -- stops the variadic --add-dir from swallowing the prompt as another directory
-  claude --add-dir $dirs -- "$prompt"
+  # Remote Control lets the session be read in claude.ai, which renders LaTeX and figures
+  claude --remote-control "studie${1:+ $*}" --add-dir $dirs -- "$prompt"
 }
 
 oving() {
   # guided work on a mandatory exercise; takes a course code, an exercise name or a PDF path
   cd ~/Documents/obsidian-laeringshvelv || return
-  claude --add-dir ~/Downloads ~/Nextcloud/skole -- "/oving${*:+ $*}"
+  claude --remote-control "øving${*:+ $*}" --add-dir ~/Downloads ~/Nextcloud/skole -- "/oving${*:+ $*}"
 }
 
 reposcan() {

@@ -24,7 +24,7 @@ Never use an em dash.
 
 | File | Use |
 |---|---|
-| `_system/config.md` | Course table and "Personlige temaer" table: code, name, folder. Read only. |
+| `_system/config.md` | Course table, "Personlige temaer" table, "Kveldslesing" example sources and paths. Read only. |
 | `10 fag/<fag>/læreplan.md`, `15 egne studier/<kode>/læreplan.md` | Units in order, concepts, sources, "Neste tema". Read only. |
 | `_system/elevmodell.md` | What the user has met (level 1 or more). Read only. |
 | `20 notater/<konsept>.md` | Concept notes: the main source for ingested units. Read only. |
@@ -127,6 +127,8 @@ The PDF goes straight to the kveldslesing folder as `<dato>-<kode>-<enheter>.pdf
 ```
 /usr/bin/python3 <skill-mappe>/scripts/build.py <arbeidsmappe>/lesing.md --out <kveldslesing-mappe>/<filnavn>.pdf --preview <arbeidsmappe>/forhandsvisning
 ```
+
+`<skill-mappe>` is this skill's base directory as an absolute path, and `<kveldslesing-mappe>` is the kveldslesing folder from Stier in `config.md`.
 
 The script prints pages and words.
 - Below 20 pages: add depth or examples to the units you have, or add the next whole unit, and rebuild.
