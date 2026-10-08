@@ -131,10 +131,26 @@ ghclone() {
   print -z "${cmds%$'\n'}"
 }
 
+_open_learning_vault() {
+  # LiveSync only syncs while Obsidian has the vault open, and sessions edit it from the terminal
+  local vault=~/Documents/obsidian-laeringshvelv
+  [[ -n $WAYLAND_DISPLAY || -n $DISPLAY ]] || return 0
+  # "open" in obsidian.json survives a quit, so it only counts while Obsidian runs
+  if pgrep -f /usr/lib/obsidian/app.asar >/dev/null &&
+    jq -e --arg p "$vault" 'any(.vaults[]; .path == $p and .open == true)' \
+      ~/.config/obsidian/obsidian.json >/dev/null 2>&1; then
+    return 0
+  fi
+  obsidian "obsidian://open?path=$vault" &>/dev/null &!
+  print -P '%F{8}Åpner Obsidian så LiveSync rekker å hente endringer fra de andre maskinene...%f'
+  sleep 8
+}
+
 studie() {
   # one study session in the learning vault: no argument or a course code is school,
   # `ny [beskrivelse]` plans a personal topic, a personal topic code studies it
   cd ~/Documents/obsidian-laeringshvelv || return
+  _open_learning_vault
   local dirs=(~/Downloads ~/Nextcloud/skole) prompt="/okt${1:+ $1}"
   if [[ $1 == ny ]]; then
     dirs=(~/Downloads ~/Nextcloud/personlig/egne-studier ~/laber)
@@ -151,6 +167,7 @@ studie() {
 oving() {
   # guided work on a mandatory exercise; takes a course code, an exercise name or a PDF path
   cd ~/Documents/obsidian-laeringshvelv || return
+  _open_learning_vault
   claude --remote-control "øving${*:+ $*}" --add-dir ~/Downloads ~/Nextcloud/skole -- "/oving${*:+ $*}"
 }
 
