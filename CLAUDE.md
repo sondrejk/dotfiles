@@ -44,6 +44,7 @@ To manually re-symlink without reinstalling packages, run `bash install-arch.sh 
 | `.vimrc`     | `~/.vimrc`             |
 | `ai/AGENTS.md`     | `~/.claude/CLAUDE.md` |
 | `ai/bin/ai-skills` | `~/.local/bin/ai-skills` |
+| `bin/*`            | `~/.local/bin/*` (every executable script) |
 
 ## AI setup (`ai/`)
 

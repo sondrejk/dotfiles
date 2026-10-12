@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# Create a repo on Forgejo (primary) with a push mirror to GitHub, and point the current git repo at it.
+set -euo pipefail
+
+FORGEJO_URL=${FORGEJO_URL:-https://git.hjem.sondrejk.no}
+FORGEJO_SSH=${FORGEJO_SSH:-ssh://git@git.hjem.sondrejk.no:2222}
+OWNER=${OWNER:-sondrejk}
+TOKEN_FILE=${FORGEJO_TOKEN_FILE:-$HOME/.config/forgejo/token}
+
+usage() {
+	cat <<EOF
+Usage: new-repo <name> [--public] [--no-github] [--description TEXT]
+
+Creates <name> on Forgejo, a matching GitHub repo and a push mirror between them.
+Run it inside a git repo to set origin (Forgejo) and github remotes there.
+
+  --public        visible to everyone (default: private on both)
+  --no-github     Forgejo only, no GitHub repo and no mirror
+  --description   repo description on both sides
+EOF
+}
+
+name="" private=true github=true description=""
+while [ $# -gt 0 ]; do
+	case "$1" in
+	--public) private=false ;;
+	--no-github) github=false ;;
+	--description) description=${2:?--description needs a value}; shift ;;
+	-h | --help) usage; exit 0 ;;
+	-*) echo "unknown option: $1" >&2; usage >&2; exit 2 ;;
+	*) [ -z "$name" ] && name=$1 || { usage >&2; exit 2; } ;;
+	esac
+	shift
+done
+[ -n "$name" ] || { usage >&2; exit 2; }
+[ -r "$TOKEN_FILE" ] || { echo "missing Forgejo token in $TOKEN_FILE" >&2; exit 1; }
+token=$(<"$TOKEN_FILE")
+
+forgejo() {
+	local method=$1 path=$2 body=${3:-}
+	curl -fsS -X "$method" -H "Authorization: token $token" -H "Content-Type: application/json" \
+		${body:+--data "$body"} "$FORGEJO_URL/api/v1$path"
+}
+
+echo "Creating $OWNER/$name on Forgejo"
+forgejo POST /user/repos "$(jq -n --arg n "$name" --arg d "$description" --argjson p "$private" \
+	'{name: $n, description: $d, private: $p, default_branch: "main"}')" >/dev/null
+
+if [ "$github" = true ]; then
+	echo "Creating $OWNER/$name on GitHub"
+	gh repo create "$OWNER/$name" "--$([ "$private" = true ] && echo private || echo public)" \
+		${description:+--description "$description"} >/dev/null
+
+	# Forgejo makes one key pair per mirror; the public half becomes a write deploy key on that GitHub repo only.
+	echo "Setting up push mirror"
+	key=$(forgejo POST "/repos/$OWNER/$name/push_mirrors" "$(jq -n --arg r "git@github.com:$OWNER/$name.git" \
+		'{remote_address: $r, use_ssh: true, interval: "8h0m0s", sync_on_commit: true}')" | jq -r .public_key)
+	gh api -X POST "repos/$OWNER/$name/keys" -f title="forgejo push mirror (${FORGEJO_URL#https://})" \
+		-f key="$key" -F read_only=false >/dev/null
+fi
+
+if git rev-parse --git-dir >/dev/null 2>&1; then
+	git remote get-url origin >/dev/null 2>&1 && git remote set-url origin "$FORGEJO_SSH/$OWNER/$name.git" \
+		|| git remote add origin "$FORGEJO_SSH/$OWNER/$name.git"
+	if [ "$github" = true ] && ! git remote get-url github >/dev/null 2>&1; then
+		git remote add github "git@github.com:$OWNER/$name.git"
+	fi
+	echo "Remotes set. Push with: git push -u origin main"
+else
+	echo "Not in a git repo. Add the remote with: git remote add origin $FORGEJO_SSH/$OWNER/$name.git"
+fi
+echo "$FORGEJO_URL/$OWNER/$name"

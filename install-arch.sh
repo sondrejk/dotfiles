@@ -595,6 +595,9 @@ verify_installation() {
 		["$HOME/.local/claude-bin/sudo"]="$DOTFILES_DIR/ai/bin/claude-sudo"
 		["$HOME/.local/claude-bin/claude-sudo-askpass"]="$DOTFILES_DIR/ai/bin/claude-sudo-askpass"
 	)
+	for script in "$DOTFILES_DIR"/bin/*; do
+		[ -x "$script" ] && expected_links["$HOME/.local/bin/$(basename "$script")"]="$script"
+	done
 
 	for dest in "${!expected_links[@]}"; do
 		want="${expected_links[$dest]}"
@@ -966,6 +969,11 @@ if should_run_stage symlink && confirm "Proceed with symlinking dotfiles (existi
 	if [ -f "$DOTFILES_DIR/.gitconfig" ]; then
 		ln_link "$DOTFILES_DIR/.gitconfig" "$HOME/.gitconfig"
 	fi
+
+	# Personal scripts: every executable in bin/ goes onto PATH.
+	for script in "$DOTFILES_DIR"/bin/*; do
+		[ -x "$script" ] && ln_link "$script" "$HOME/.local/bin/$(basename "$script")"
+	done
 
 	# AI setup: instructions file, skills sync and hooks.
 	# ai/AGENTS.md is provider-agnostic; Claude Code only reads CLAUDE.md,
