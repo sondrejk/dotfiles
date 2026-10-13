@@ -1,0 +1,133 @@
+#!/usr/bin/env bash
+# studie - every command for the learning vault in one place. `studie help` lists them.
+set -euo pipefail
+
+VAULT="$HOME/Documents/obsidian-laeringshvelv"
+PYTHON=/usr/bin/python3 # system python has Pillow, which the vault scripts need
+
+cd "$VAULT" || {
+	echo "studie: fant ikke hvelvet i $VAULT" >&2
+	exit 1
+}
+
+course_codes() {
+	awk -F'|' '/^## Emner/{t=1} t && /^\| [A-Z]+[0-9]+ /{gsub(/ /,"",$2); print $2} /^## Oppfølging/{t=0}' _system/config.md
+}
+
+topic_codes() {
+	find "15 egne studier" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' 2>/dev/null | sort
+}
+
+open_vault() {
+	# LiveSync only syncs while Obsidian has the vault open, and sessions edit it from the terminal
+	[[ -n ${WAYLAND_DISPLAY:-} || -n ${DISPLAY:-} ]] || return 0
+	# "open" in obsidian.json survives a quit, so it only counts while Obsidian runs
+	if pgrep -f /usr/lib/obsidian/app.asar >/dev/null &&
+		jq -e --arg p "$VAULT" 'any(.vaults[]; .path == $p and .open == true)' \
+			~/.config/obsidian/obsidian.json >/dev/null 2>&1; then
+		return 0
+	fi
+	obsidian "obsidian://open?path=$VAULT" &>/dev/null &
+	disown
+	printf '\033[2mÅpner Obsidian så LiveSync rekker å hente endringer fra de andre maskinene...\033[0m\n'
+	sleep 8
+}
+
+# Remote Control lets the session be read in claude.ai, which renders LaTeX and figures.
+# -- stops the variadic --add-dir from swallowing the prompt as another directory.
+session() {
+	local name=$1 prompt=$2
+	shift 2
+	open_vault
+	exec claude --remote-control "$name" --add-dir "$@" -- "$prompt"
+}
+
+usage() {
+	local b=$'\033[1m' d=$'\033[2m' e=$'\033[0m'
+	cat <<EOF
+${b}studie${e} - studiesystemet i læringshvelvet
+
+${b}Økter${e}
+  studie                    skoleøkt, emnet velges etter eksamensplanen
+  studie <emnekode>         skoleøkt i et bestemt emne
+  studie <temakode>         økt i et personlig tema
+  studie ny [beskrivelse]   planlegg et nytt personlig tema
+
+${b}Øvinger og lesing${e}
+  studie oving [emne|øving|pdf]   hjelp med en obligatorisk øving (også: oving)
+  studie les <tema> [sider]       kveldslesings-PDF til mobilen
+  studie innta                    les inn nye PDF-er fra ~/Downloads
+
+${b}Oversikt (starter ingen økt)${e}
+  studie status             økter mot planen, emner, forfalte kort og frister
+  studie kort               aktive, ventende og forfalte kort per emne
+  studie kilder             holdte forelesninger som mangler slides
+  studie plan               periodene og reglene i eksamensplanen
+  studie help               denne lista
+
+${b}Koder${e}
+  Emner:  $(course_codes | paste -sd' ')
+  Temaer: $(topic_codes | paste -sd' ')
+
+${d}Kort repeteres i Obsidian med Ctrl+Shift+R. Notater fra forelesning: Ctrl+N → Ny fangst.${e}
+EOF
+}
+
+plan() {
+	# The Perioder and Regler sections are what changes from week to week
+	awk '/^## Perioder/{p=1} /^## Prioritering/{p=0} p' _system/eksamensplan.md
+}
+
+main() {
+	local cmd=${1:-}
+	case "$cmd" in
+	"")
+		session "studie" "/okt" ~/Downloads ~/Nextcloud/skole
+		;;
+	help | hjelp | -h | --help)
+		usage
+		;;
+	status)
+		"$PYTHON" _system/scripts/status.py
+		;;
+	kort)
+		"$PYTHON" _system/scripts/kortstatus.py
+		;;
+	kilder)
+		"$PYTHON" _system/scripts/kildesjekk.py "${@:2}"
+		;;
+	plan)
+		plan
+		;;
+	ny)
+		session "studie ny" "/nytt-tema${2:+ ${*:2}}" ~/Downloads ~/Nextcloud/personlig/egne-studier ~/laber
+		;;
+	oving)
+		session "øving${2:+ ${*:2}}" "/oving${2:+ ${*:2}}" ~/Downloads ~/Nextcloud/skole
+		;;
+	les)
+		[[ -n ${2:-} ]] || {
+			echo "studie les: skriv et tema, for eksempel: studie les parallelle" >&2
+			exit 1
+		}
+		session "kveldslesing ${*:2}" "/kveldslesing ${*:2}" ~/Downloads ~/Nextcloud
+		;;
+	innta)
+		session "innta" "/innta" ~/Downloads ~/Nextcloud/skole ~/Nextcloud/personlig/egne-studier
+		;;
+	*)
+		if course_codes | grep -qx "$cmd"; then
+			session "studie $cmd" "/okt $cmd" ~/Downloads ~/Nextcloud/skole
+		elif topic_codes | grep -qx "$cmd"; then
+			session "studie $cmd" "/egen-okt $cmd" ~/Downloads ~/Nextcloud/personlig/egne-studier ~/laber
+		else
+			echo "studie: ukjent kommando eller kode «$cmd»" >&2
+			echo >&2
+			usage >&2
+			exit 1
+		fi
+		;;
+	esac
+}
+
+main "$@"
