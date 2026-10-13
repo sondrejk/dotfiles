@@ -131,45 +131,31 @@ ghclone() {
   print -z "${cmds%$'\n'}"
 }
 
-_open_learning_vault() {
-  # LiveSync only syncs while Obsidian has the vault open, and sessions edit it from the terminal
+# The learning-vault CLI lives in the repo, so a `git pull` is all another machine needs
+studie() { "$HOME/repos/personal/dotfiles/ai/bin/studie" "$@"; }
+oving() { studie oving "$@"; }
+
+_studie() {
   local vault=~/Documents/obsidian-laeringshvelv
-  [[ -n $WAYLAND_DISPLAY || -n $DISPLAY ]] || return 0
-  # "open" in obsidian.json survives a quit, so it only counts while Obsidian runs
-  if pgrep -f /usr/lib/obsidian/app.asar >/dev/null &&
-    jq -e --arg p "$vault" 'any(.vaults[]; .path == $p and .open == true)' \
-      ~/.config/obsidian/obsidian.json >/dev/null 2>&1; then
-    return 0
-  fi
-  obsidian "obsidian://open?path=$vault" &>/dev/null &!
-  print -P '%F{8}Åpner Obsidian så LiveSync rekker å hente endringer fra de andre maskinene...%f'
-  sleep 8
+  local -a cmds codes
+  cmds=(
+    'help:alle kommandoer'
+    'status:økter mot planen, emner, kort og frister'
+    'kort:kort per emne'
+    'kilder:forelesninger som mangler slides'
+    'plan:perioder og regler i eksamensplanen'
+    'ny:planlegg et personlig tema'
+    'oving:hjelp med en obligatorisk øving'
+    'les:kveldslesings-PDF'
+    'innta:les inn nye PDF-er'
+  )
+  codes=(${(f)"$(awk -F'|' '/^## Emner/{t=1} t && /^\| [A-Z]+[0-9]+ /{gsub(/ /,"",$2); gsub(/^ +| +$/,"",$3); print $2":"$3} /^## Oppfølging/{t=0}' $vault/_system/config.md 2>/dev/null)"})
+  codes+=(${vault}/15\ egne\ studier/*(N/:t))
+  (( CURRENT == 2 )) || return
+  _describe 'kommando' cmds
+  _describe 'kode' codes
 }
-
-studie() {
-  # one study session in the learning vault: no argument or a course code is school,
-  # `ny [beskrivelse]` plans a personal topic, a personal topic code studies it
-  cd ~/Documents/obsidian-laeringshvelv || return
-  _open_learning_vault
-  local dirs=(~/Downloads ~/Nextcloud/skole) prompt="/okt${1:+ $1}"
-  if [[ $1 == ny ]]; then
-    dirs=(~/Downloads ~/Nextcloud/personlig/egne-studier ~/laber)
-    prompt="/nytt-tema${2:+ ${*:2}}"
-  elif [[ -n $1 && -d "15 egne studier/$1" ]]; then
-    dirs=(~/Downloads ~/Nextcloud/personlig/egne-studier ~/laber)
-    prompt="/egen-okt $1"
-  fi
-  # -- stops the variadic --add-dir from swallowing the prompt as another directory
-  # Remote Control lets the session be read in claude.ai, which renders LaTeX and figures
-  claude --remote-control "studie${1:+ $*}" --add-dir $dirs -- "$prompt"
-}
-
-oving() {
-  # guided work on a mandatory exercise; takes a course code, an exercise name or a PDF path
-  cd ~/Documents/obsidian-laeringshvelv || return
-  _open_learning_vault
-  claude --remote-control "øving${*:+ $*}" --add-dir ~/Downloads ~/Nextcloud/skole -- "/oving${*:+ $*}"
-}
+(( $+functions[compdef] )) && compdef _studie studie
 
 reposcan() {
   setopt localoptions nomonitor

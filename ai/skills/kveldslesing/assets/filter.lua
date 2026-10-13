@@ -34,3 +34,15 @@ function Blocks(blocks)
   end
   return out
 end
+
+-- An answer to a question the reader should try first goes on the next page, so it cannot be read before the attempt.
+function Div(el)
+  if not el.classes:includes('svar') then return nil end
+  local out = pandoc.Blocks({
+    pandoc.RawBlock('typst', '#pagebreak(weak: true)'),
+    pandoc.RawBlock('typst', '#svar['),
+  })
+  out:extend(el.content)
+  out:insert(pandoc.RawBlock('typst', ']'))
+  return out
+end
