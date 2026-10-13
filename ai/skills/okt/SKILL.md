@@ -26,6 +26,7 @@ All user-facing text is Norwegian bokmål. Never use an em dash.
 | File | Use |
 |---|---|
 | `_system/config.md` | Limits, courses, exam dates, paths, exam formats, split and problem types per course. Read at start. All personal and course-specific settings live here, never in this skill. |
+| Study plan (optional, path under Stier in `config.md`) | Periods up to the exams and course-choice rules that override the score. Read at start. |
 | `_system/elevmodell.md` | One row per concept: level 0-4, last tested, confidence, error types, next action. |
 | `_system/logg.md` | One block per session. Write continuously. |
 | `10 fag/<fag>/læreplan.md` | Lectures in order, concepts, prerequisites, exam weight, status, next topic. |
@@ -46,7 +47,7 @@ The session can die at any moment (terminal closed, usage limit, context compact
 ## 1. Oppstart (max 1 minute, no questions unless needed)
 
 1. `date '+%F %H:%M'`. This is the start time.
-2. Read `_system/config.md` and the last ~60 lines of `_system/logg.md`.
+2. Read `_system/config.md`, the study plan if Stier in `config.md` lists one, and the last ~60 lines of `_system/logg.md`.
    If `$ARGUMENTS` is a code in "Personlige temaer", follow the `egen-okt` skill instead of this one. If it is neither a course code nor a personal topic, list both kinds of codes, say that `studie ny` plans a new topic, and stop.
 3. **Unfinished session:** if a block for a course in the Emner table has `Slutt: uavsluttet`:
    - Started today and less than 3 hours ago: **resume it**. Append `- gjenopptatt <tid>`, reread the block and `elevmodell.md`, and continue from the last event. If the last event is `- venter: ...`, ask exactly that question again first. Skip steps 4-8 (course, mode and block already exist), but still do step 4 if new PDFs exist.
@@ -57,13 +58,18 @@ The session can die at any moment (terminal closed, usage limit, context compact
 5. **Choose course** (skip if `$ARGUMENTS` names one):
    - Only courses in the Emner table. Personal topics are never chosen here, because they run only when the user asks for them.
    - Exclude courses whose "Aktiv fra" is in the future.
-   - If `logg.md` already has a finished session today, exclude that course, unless it has an exam within 7 days.
+   - If `logg.md` already has a finished session today, exclude that course, unless it has an exam within 7 days or the rule in `config.md` for the day's later sessions allows the same course.
+   - If the study plan has a course-choice rule that applies today, it decides instead of the score. Name the rule in the one-line explanation.
    - Score each remaining course and pick the highest:
      `60 / max(dager til eksamen, 1)` + `2 ×` (held lectures with high exam weight not `lært`) + `1 ×` (other held lectures not `lært`) + `0.5 ×` (days since last session in this course, max 10).
+     A lecture is held when its Dato in `læreplan.md` is today or earlier. The læreplan stores no held status, so always compute it from the date.
      For a course the user follows on their own ("Oppfølging av undervisning" in `config.md`), halve the two lecture terms: the user has seen that material, so sessions consolidate instead of teaching from scratch.
    - Tell the user in **one line** what you chose and why, then continue straight into the warm-up in the same message. Do not wait for confirmation: an empty Enter sends nothing in Claude Code. Example: `ABC1234, T1 søk: 17 dager til eksamen, 6 forelesninger bak. (Skriv en annen emnekode for å bytte.)` If the user answers the first question with a course code instead, switch course.
-6. **New capture notes:** use Glob on `10 fag/<fag>/fangst/*.md` and read the files dated after the course's last session in the log. Read them. Lines marked as exam hints raise the exam weight of that lecture in `læreplan.md`. Things the user did not understand become pretest questions today.
+6. **Capture notes** (the user's own notes from lectures and videos):
+   - **Sort the inbox first:** every note in `00 innboks/` with `type: fangst` belongs to the course its `Kilde:` line names, matched against "Fangst" in `config.md` (nicknames), the course code and the course name. Move it to `10 fag/<fag>/fangst/` with `mv`. Delete a capture with nothing under its headings (an empty template). Leave a capture whose course is unclear in the inbox and mention it in one line. Log `- fangst: flyttet <n>, slettet <n> tomme`.
+   - **Read unread captures for today's course:** every `10 fag/<fag>/fangst/*.md` without `lest:` in its frontmatter. Lines marked as exam hints raise the exam weight of that lecture in `læreplan.md`. Things the user did not understand become pretest questions today when the concept is taught in this session. Otherwise add them to that concept's Neste tiltak in `elevmodell.md` (`fangst: <hva som var uklart>`), so they are not lost. Then add `lest: <dato>` to the capture's frontmatter, so it is read once.
 7. **Mode:** days to exam ≤ 7 gives exam mode only. Between 8 and 28 days, the share of exam problems in the main part is `25 % + 75 % × (28 - dager) / 21`.
+   If `config.md` makes this session a problem session (for example the day's third session), the main part is problems only, on concepts at level 2 or more, with no new material.
 8. Write the log block:
    ```
    ## <dato> <tid> <EMNE>
