@@ -54,6 +54,13 @@
   stroke: (left: 2pt + accent), breakable: false, it.body,
 )
 
+// The answer panel gets its own label, so a reader who turns the page knows this is the reveal.
+#let svar(body) = block(
+  width: 100%, fill: panel, inset: (left: 9pt, right: 7pt, y: 7pt), radius: 3pt,
+  stroke: (left: 2pt + accent),
+  [#text(font: "Noto Sans", weight: "semibold", fill: accent)[Svar] #parbreak() #body],
+)
+
 #set table(inset: 5pt, stroke: 0.5pt + rule)
 #show table: set text(size: 9.5pt)
 // Tables are at most 3 narrow columns, so a split table only costs the reader its header.

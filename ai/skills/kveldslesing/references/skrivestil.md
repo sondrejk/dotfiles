@@ -19,8 +19,13 @@ Open each `#` chapter with the problem as one question in a blockquote:
 Then follow this arc:
 1. The naive attempt: the obvious solution.
 2. Why it fails: a concrete case where it breaks.
-3. The real mechanism, one step at a time.
+3. The real mechanism, shown first on a concrete case and only then stated as a general rule.
 4. A real example that shows the mechanism at work (point 5).
+5. A contrast with a near miss, and the misconceptions this concept attracts (point 10).
+6. A closing `> **Tenk på dette:**` question that the next chapter answers.
+
+Before the mechanism, let the reader commit to a guess when the result is not obvious: "Hva tror du skjer med telleren nå?"
+Answer it in the next paragraph or behind a page break, never leave it hanging.
 
 Everything in the chapter answers the question.
 Text that does not answer it belongs in another chapter or nowhere.
@@ -113,6 +118,38 @@ Explain fewer units well rather than many units compressed.
 If the draft is too long, drop the last unit and keep it for the next PDF.
 Never shorten sentences or merge chapters to make more material fit.
 
+### 10. Teach for learning, not only for understanding
+
+Clear prose feels good to read but fades fast.
+These points come from research on how people learn from text, and each has a concrete form in the PDF.
+
+| Principle | What the PDF does |
+|---|---|
+| Problem before concept | `Problemet:` first, the term only once the reader needs it |
+| Concrete before abstract | a fully worked case, then the general rule or formula; never a rule list first |
+| Prediction before answer | a guess before the mechanism, answers after a page break or the next chapter break |
+| Worked example, then fading | full example with named steps, then one step left out, then the whole thing to the reader |
+| Contrast and near misses | the concept next to something that looks alike, with the difference named |
+| Refute misconceptions | `Vanlig feil:` states the wrong belief, why it is tempting, why it is wrong |
+| Linked representations | prose, figure, code and formula for the same thing, with the links named |
+| No redundancy | a figure's title, caption and the prose never say the same thing twice |
+| State over time | snapshots for every walkthrough of a procedure, not only the first |
+| Spaced retrieval | `# Fra sist` asks about the previous PDF before anything new |
+| Retrieval, not rereading | `# Kart` lists terms to recall, definitions behind a page break |
+| One running example | a single case that later chapters extend |
+| Pre-training | names and parts of the system before the mechanism that uses them |
+| Signal the hard part | `Vanskelig:` on the step readers get stuck on |
+| Layered depth | exam weight on every chapter, core first, `Stopp her hvis du er trøtt` after it, `(fordypning)` sections |
+| Orientation | abstract says what the reader can do afterwards, `# Kart` ties it to the rest |
+
+Keep questions few and specific.
+A question that asks for one value or one choice works better than an open "forklar hvorfor", which tires a reader in bed and can hurt more than it helps.
+
+Name the steps of a procedure by their purpose, not their content: "Steg 2: oppdater α" says what the step is for, so the reader can reuse it on a new problem.
+
+A worked example helps a novice and gets in the way of someone who already knows the procedure.
+When the learner model shows level 3 or more for a concept, skip the full example and go straight to the reader's own attempt.
+
 ## Review pass
 
 After the draft, run a reader review before you build (step 5 in `SKILL.md`).
@@ -127,6 +164,17 @@ The reviewer gets this checklist:
 - [ ] No sentence is over 25 words or holds more than one mechanism.
 - [ ] No cute phrase without exact content.
 - [ ] No flags or values hidden in prose that belong in a table or code block.
+- [ ] Every chapter shows a concrete case before the general rule or formula.
+- [ ] Every chapter except the last before `# Kart` ends with `Tenk på dette:`, and the next chapter answers it.
+- [ ] Every procedure the exam asks for has a fading series, and every `svar` div answers exactly the question before it.
+- [ ] Every chapter has at least one contrast pair, and every known misconception has a `Vanlig feil:` block.
+- [ ] The hard step is marked, and no sentence says "trivielt", "åpenbart" or "lett å se".
+- [ ] Code and figures that show the same thing name the link between them.
+- [ ] `# Kart` lists the key terms for recall, and its `svar` div gives every definition in one exact sentence.
+- [ ] `# Fra sist` asks about the previous PDF for the same code, when there is one.
+- [ ] Every chapter has an `Eksamen:` line, the core comes first, and `Stopp her hvis du er trøtt` follows the core.
+- [ ] No section opens with a rule list or definition table before a concrete case.
+- [ ] Every procedure walkthrough has snapshots, and no caption repeats the prose or the figure title.
 
 The reviewer returns a list of findings with the quoted sentence and a proposed rewrite.
 Fix every finding, or note in one line why it is not a problem.
