@@ -25,12 +25,12 @@ Skip a candidate unless the session (or an earlier logged one) tested or explain
 
 ## 2. Limits
 
-- **Max 6 new cards per session** (`_system/config.md`).
+- **New cards per session:** two limits in `_system/config.md`. Candidates 1-3 share "Maks nye kort per økt". Must-memorize facts (candidate 4) get their own slots ("Ekstra plasser for huskefakta per økt"), so errors never crowd them out. Main slots left unused may also go to must-memorize facts.
 - **Max 300 active cards per course.** Check with `/usr/bin/python3 _system/scripts/kortstatus.py`.
 - **Activation:** every concept that reached level 2 or more in this session gets its note's tag switched from `#flashcards-vent/<domene>` to `#flashcards/<domene>`. Max 25 activated cards per session. Remaining concepts keep next action `aktiver kort` in `elevmodell.md` and are activated first in the next session.
 - Before switching a note's tag, check every card in it against the log: each fact must have been tested or explained. If one was not, keep the note waiting and set next action `gå gjennom <fact>, så aktiver kort`.
 - New cards for a concept that is still below level 2 go into the note but stay waiting (the note keeps `#flashcards-vent/`).
-- **Personal topics** (codes in "Personlige temaer" in config): max 3 new cards per session and max 150 active cards per topic, because they share the daily review budget with school. While a school course has an exam within 7 days, write no new cards and activate none for personal topics. Set next action `aktiver kort` instead.
+- **Personal topics** (codes in "Personlige temaer" in config): the personal limits in config for new and active cards (no extra must-memorize slots), because they share the daily review budget with school. While a school course has an exam within 7 days, write no new cards and activate none for personal topics. Set next action `aktiver kort` instead.
 
 ## 3. Card standard
 
