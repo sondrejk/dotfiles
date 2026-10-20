@@ -48,7 +48,7 @@ usage() {
 ${b}studie${e} - studiesystemet i læringshvelvet
 
 ${b}Økter${e}
-  studie                    skoleøkt, emnet velges etter eksamensplanen
+  studie okt                skoleøkt, emnet velges etter eksamensplanen
   studie <emnekode>         skoleøkt i et bestemt emne
   studie <temakode>         økt i et personlig tema
   studie ny [beskrivelse]   planlegg et nytt personlig tema
@@ -63,7 +63,7 @@ ${b}Oversikt (starter ingen økt)${e}
   studie kort               aktive, ventende og forfalte kort per emne
   studie kilder             holdte forelesninger som mangler slides
   studie plan               periodene og reglene i eksamensplanen
-  studie help               denne lista
+  studie help               denne lista (også: studie uten argument)
 
 ${b}Koder${e}
   Emner:  $(course_codes | paste -sd' ')
@@ -81,11 +81,11 @@ plan() {
 main() {
 	local cmd=${1:-}
 	case "$cmd" in
-	"")
-		session "studie" "/okt" ~/Downloads ~/Nextcloud/skole
-		;;
-	help | hjelp | -h | --help)
+	"" | help | hjelp | -h | --help)
 		usage
+		;;
+	okt)
+		session "studie" "/okt" ~/Downloads ~/Nextcloud/skole
 		;;
 	status)
 		"$PYTHON" _system/scripts/status.py

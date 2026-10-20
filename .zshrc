@@ -140,6 +140,7 @@ _studie() {
   local -a cmds codes
   cmds=(
     'help:alle kommandoer'
+    'okt:skoleøkt, emnet velges etter eksamensplanen'
     'status:økter mot planen, emner, kort og frister'
     'kort:kort per emne'
     'kilder:forelesninger som mangler slides'
