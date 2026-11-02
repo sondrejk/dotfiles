@@ -3,7 +3,9 @@
 set -euo pipefail
 
 VAULT="$HOME/Documents/obsidian-laeringshvelv"
+CONFIG="$VAULT/_system/config.md"
 PYTHON=/usr/bin/python3 # system python has Pillow, which the vault scripts need
+STUDIE_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../studie" && pwd)"
 
 cd "$VAULT" || {
 	echo "studie: fant ikke hvelvet i $VAULT" >&2
@@ -12,11 +14,130 @@ cd "$VAULT" || {
 
 course_names() {
 	# First column of the Emner table, skipping its header and separator rows
-	awk -F'|' '/^## Emner/{t=1; n=0; next} /^## /{t=0} t && /^\|/ && ++n > 2 {gsub(/ /,"",$2); print $2}' _system/config.md
+	awk -F'|' '/^## Emner/{t=1; n=0; next} /^## /{t=0} t && /^\|/ && ++n > 2 {gsub(/ /,"",$2); print $2}' "$CONFIG"
 }
 
 topic_codes() {
 	find "15 egne studier" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' 2>/dev/null | sort
+}
+
+path_setting() {
+	# First `code span` in the value column of a row in the Stier table of config.md
+	awk -F'|' -v key="$1" '/^## Stier/{t=1; next} /^## /{t=0}
+		t { k=$2; gsub(/^ +| +$/, "", k); if (k == key && match($3, /`[^`]+`/)) {print substr($3, RSTART+1, RLENGTH-2); exit} }' "$CONFIG"
+}
+
+code_dir() {
+	local course=$1 cloud template
+	cloud=$(awk -F'|' -v c="$course" '/^## Emner/{t=1; next} /^## /{t=0}
+		t { e=$2; gsub(/ /, "", e); if (e == c) {v=$6; gsub(/`| /, "", v); print v; exit} }' "$CONFIG")
+	[[ -n $cloud ]] || {
+		echo "studie: ukjent emne «$course». Emner: $(course_names | paste -sd' ')" >&2
+		return 1
+	}
+	template=$(path_setting Kodeoppgaver)
+	[[ -n $template ]] || {
+		echo "studie: raden Kodeoppgaver mangler i Stier i config.md" >&2
+		return 1
+	}
+	echo "${template//<Nextcloud-mappe>/$cloud}"
+}
+
+code_file() {
+	[[ $# -eq 2 ]] || {
+		echo "studie: skriv emne og fil, for eksempel: studie kode parallelle vecadd.cu" >&2
+		return 1
+	}
+	local dir
+	dir=$(code_dir "$1") || return 1
+	echo "${dir%/}/$2"
+}
+
+edit_code() {
+	local file
+	file=$(code_file "$@") || exit 1
+	mkdir -p "$(dirname "$file")"
+	exec vim -u "$STUDIE_DIR/eksamen.vim" -i NONE "$file"
+}
+
+run_code() {
+	local file
+	file=$(code_file "$@") || exit 1
+	[[ -f $file ]] || {
+		echo "studie kjør: fant ikke $file" >&2
+		exit 1
+	}
+	local dir=${file%/*} name=${file##*/}
+	local stem=${name%.*} ext=${name##*.}
+
+	# The first run is the attempt that counts, as on a paper exam without a compiler
+	if [[ ! -e $dir/forsøk1/$name ]]; then
+		mkdir -p "$dir/forsøk1"
+		cp "$file" "$dir/forsøk1/$name"
+		printf '\033[2mFørste kjøring: forsøket er lagret i forsøk1/%s\033[0m\n' "$name"
+	fi
+
+	# A driver with main() comes with tasks that only ask for a function or kernel
+	local driver="" d
+	for d in "$dir/$stem.main."*; do
+		[[ -f $d ]] && driver=${d##*/}
+	done
+
+	# Build outside Nextcloud, so binaries are never synced
+	local build="${XDG_CACHE_HOME:-$HOME/.cache}/studie-kode/$stem"
+	rm -rf "$build"
+	mkdir -p "$build"
+	cp "$file" "$build/"
+	[[ -n $driver ]] && cp "$dir/$driver" "$build/"
+	cd "$build"
+
+	local launch
+	launch=$(grep -m1 -o 'kjør:.*' "$name" | sed 's/^kjør:[[:space:]]*//; s/[[:space:]]*\*\/[[:space:]]*$//' || true)
+
+	case $ext in
+	c)
+		local src=${driver:-$name}
+		if grep -q 'mpi\.h' "$name" ${driver:+"$driver"}; then
+			mpicc -Wall -Wextra -g -o prog "$src" -lm
+			eval "${launch:-mpirun -np 4 --oversubscribe ./prog}"
+		else
+			gcc -Wall -Wextra -g -fopenmp -pthread -o prog "$src" -lm
+			eval "${launch:-./prog}"
+		fi
+		;;
+	cu)
+		local src=${driver:-$name} host
+		launch=${launch:-./prog}
+		if command -v nvcc >/dev/null || [[ -x /opt/cuda/bin/nvcc ]]; then
+			PATH="/opt/cuda/bin:$PATH" nvcc -o prog "$src"
+			eval "$launch"
+		else
+			host=$(path_setting CUDA-maskin)
+			[[ -n $host ]] || {
+				echo "studie kjør: nvcc mangler her, og raden CUDA-maskin mangler i Stier i config.md" >&2
+				exit 1
+			}
+			printf '\033[2mKompilerer og kjører på %s...\033[0m\n' "$host"
+			# Over ssh instead of Nextcloud, so the run never waits for a sync
+			tar -cf - . | ssh "$host" "d=\$(mktemp -d) && tar -C \$d -xf - && cd \$d &&
+				PATH=/opt/cuda/bin:\$PATH nvcc -o prog $(printf %q "$src") && $launch; rc=\$?; rm -rf \$d; exit \$rc"
+		fi
+		;;
+	s | S)
+		# 32-bit ARM, run in user-mode emulation. A C driver is linked in when the task gives one.
+		# Dynamic, because the AUR glibc ships without libc.a; qemu finds the ARM loader in the sysroot.
+		# -marm keeps the driver out of Thumb, so a bl into a label without .type %function still works.
+		local sysroot
+		sysroot=$(arm-linux-gnueabihf-gcc -print-sysroot)
+		arm-linux-gnueabihf-gcc -marm -g -Wa,--noexecstack -o prog ${driver:+"$driver"} "$name"
+		launch=${launch:-./prog}
+		eval "${launch//.\/prog/qemu-arm -L $(printf %q "$sysroot") ./prog}"
+		;;
+	*)
+		echo "studie kjør: kan ikke kjøre .$ext-filer (støtter .c, .cu og .s)" >&2
+		exit 1
+		;;
+	esac
 }
 
 open_vault() {
@@ -53,6 +174,10 @@ ${b}Økter${e}
   studie <emne>             skoleøkt i et bestemt emne
   studie <tema>             økt i et personlig tema
   studie ny [beskrivelse]   planlegg et nytt personlig tema
+
+${b}Kodeoppgaver i økta${e}
+  studie kode <emne> <fil>  åpne oppgavefila i bar vim (ingen farger eller fullføring)
+  studie kjør <emne> <fil>  kompiler og kjør; første kjøring lagres som forsøket
 
 ${b}Øvinger og lesing${e}
   studie oving [emne|øving|pdf]   hjelp med en obligatorisk øving (også: oving)
@@ -99,6 +224,16 @@ main() {
 		;;
 	plan)
 		plan
+		;;
+	kode)
+		edit_code "${@:2}"
+		;;
+	kjør | kjor)
+		run_code "${@:2}"
+		;;
+	kodemappe)
+		# Used by the zsh completion
+		code_dir "${2:-}"
 		;;
 	ny)
 		session "studie ny" "/nytt-tema${2:+ ${*:2}}" ~/Downloads ~/Nextcloud/personlig/egne-studier ~/laber

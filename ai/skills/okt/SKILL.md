@@ -137,6 +137,23 @@ Hint 3 or 4 sets next action `variantoppgave uten hjelp` for the concept. Withou
 Assess the method, not just the answer: say what is right and why, point to errors with a question instead of correcting them outright.
 **Write to `elevmodell.md` after every problem** and append to the log block.
 
+### Coding problems
+
+Any problem where the user writes or changes code (C, MPI, OpenMP, CUDA, ARM assembly) is done in a file, not in the chat. Short code-reading questions stay in the chat.
+1. Create the file in the course's code folder (Kodeoppgaver in Stier in `config.md`), named after the task without a date: `vecadd.cu`, `halo-sendrecv.c`, `summer-array.s`. Never overwrite an existing file: pick another name.
+2. Contents: the task text as one `/* ... */` comment at the top, so the user never switches windows. Nothing else when the task says "write a program": no skeleton, no includes, no `main`. Code the task itself gives (find the bug, complete the function, what does this print) goes in below the comment.
+3. Runtime settings the program needs go on one line inside the comment: `kjør: mpirun -np 4 ./prog`, `kjør: OMP_NUM_THREADS=8 ./prog 1000`. Leave it out when `./prog` (or `mpirun -np 4` for MPI) is enough.
+4. A task that asks only for a function or kernel gets a driver `<navn>.main.<c|cu>` next to it, which `#include`s the user's file (for `.s`: is linked with it) and prints the result. The driver is not a test: it never says right or wrong.
+5. Give the command on its own line, and log `- venter:` with the task and the file path:
+   ```
+   studie kode <emne> <fil>
+   ```
+   Mention once per session that `studie kjør <emne> <fil>` compiles and runs it (CUDA runs on the CUDA-maskin in config).
+6. When the user says they are done, read `forsøk1/<fil>` if it exists, otherwise the file itself, and copy that to `forsøk1/<fil>`. That first version is the attempt: the level follows it, as on a paper exam without a compiler. Later fixes after compiler errors are learning, not "without hints". Also read the current file, and say what the compiler caught that the attempt missed.
+7. Feedback follows the rules above. Questions about errors refer to line numbers in the file.
+
+If the user answers a coding problem in the chat instead (no terminal at hand), accept it and assess it the same way.
+
 ### Handwritten work ("sjekk")
 
 When the user writes "sjekk": read the newest file in the submission folder (Innleveringsmappe in Stier in `config.md`) (PDF: `/usr/bin/python3 _system/scripts/pdfverktoy.py sider <pdf>` and read the images). Give feedback on the method step by step, not just the final answer.
