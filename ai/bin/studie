@@ -10,8 +10,9 @@ cd "$VAULT" || {
 	exit 1
 }
 
-course_codes() {
-	awk -F'|' '/^## Emner/{t=1} t && /^\| [A-Z]+[0-9]+ /{gsub(/ /,"",$2); print $2} /^## Oppfølging/{t=0}' _system/config.md
+course_names() {
+	# First column of the Emner table, skipping its header and separator rows
+	awk -F'|' '/^## Emner/{t=1; n=0; next} /^## /{t=0} t && /^\|/ && ++n > 2 {gsub(/ /,"",$2); print $2}' _system/config.md
 }
 
 topic_codes() {
@@ -49,8 +50,8 @@ ${b}studie${e} - studiesystemet i læringshvelvet
 
 ${b}Økter${e}
   studie okt                skoleøkt, emnet velges etter eksamensplanen
-  studie <emnekode>         skoleøkt i et bestemt emne
-  studie <temakode>         økt i et personlig tema
+  studie <emne>             skoleøkt i et bestemt emne
+  studie <tema>             økt i et personlig tema
   studie ny [beskrivelse]   planlegg et nytt personlig tema
 
 ${b}Øvinger og lesing${e}
@@ -65,8 +66,8 @@ ${b}Oversikt (starter ingen økt)${e}
   studie plan               periodene og reglene i eksamensplanen
   studie help               denne lista (også: studie uten argument)
 
-${b}Koder${e}
-  Emner:  $(course_codes | paste -sd' ')
+${b}Navn${e}
+  Emner:  $(course_names | paste -sd' ')
   Temaer: $(topic_codes | paste -sd' ')
 
 ${d}Kort repeteres i Obsidian med Ctrl+Shift+R. Notater fra forelesning: Ctrl+N → Ny fangst.${e}
@@ -116,12 +117,12 @@ main() {
 		session "innta" "/innta" ~/Downloads ~/Nextcloud/skole ~/Nextcloud/personlig/egne-studier
 		;;
 	*)
-		if course_codes | grep -qx "$cmd"; then
+		if course_names | grep -qx "$cmd"; then
 			session "studie $cmd" "/okt $cmd" ~/Downloads ~/Nextcloud/skole
 		elif topic_codes | grep -qx "$cmd"; then
 			session "studie $cmd" "/egen-okt $cmd" ~/Downloads ~/Nextcloud/personlig/egne-studier ~/laber
 		else
-			echo "studie: ukjent kommando eller kode «$cmd»" >&2
+			echo "studie: ukjent kommando, emne eller tema «$cmd»" >&2
 			echo >&2
 			usage >&2
 			exit 1

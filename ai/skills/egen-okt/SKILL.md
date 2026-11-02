@@ -34,7 +34,7 @@ In addition to the files in `okt`:
 3. **Status `pause`:** say in one line that the topic is paused (and until when, if `config.md` says so), and ask whether to resume it (status back to `aktiv`) or stop. Cards keep running either way.
    **Status `vedlikehold`:** say the goals are reached and the cards continue. Ask whether to plan a part 2 (run `nytt-tema` with `revider <kode>`) or run a repetition session (warm-up plus problems on the weakest concepts).
 4. **Unfinished sessions:** apply the rule in `okt` step 3 only to blocks with this code. Unfinished blocks with other codes: finish silently if older than 3 hours, otherwise leave them.
-5. **School exam within 7 days** (the Emner table): one line, for example `ABC1234 har eksamen om 4 dager.`, then continue. Never stop the user.
+5. **School exam within 7 days** (the Emner table): one line, for example `algdat har eksamen om 4 dager.`, then continue. Never stop the user.
 6. No PDF scan, no course choice, no capture notes, no exam ramp.
 7. Write the log block as in `okt` step 8, with `Tema: <modul nr og tema>`.
 
