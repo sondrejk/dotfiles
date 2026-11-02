@@ -41,7 +41,7 @@ Reading in bed tests nothing, so it raises no level and counts as no session.
 
 1. `date '+%F'`. Read `_system/config.md` and `_system/kveldslesing.md`.
    The learning profile in the "Kveldslesing" section of `config.md` and every `Tilbakemelding` line in `kveldslesing.md` adjust how you write (step 5).
-2. Match the topic to a code: course code or name in Emner, code or name in Personlige temaer.
+2. Match the topic to a code: Emne or Navn in Emner, Kode or Navn in Personlige temaer.
    Loose matches count: a word from a course or topic name gives that code.
    If nothing matches, or two codes match equally well, reply with the list of codes and names and stop.
 3. Options in the request:
@@ -114,7 +114,7 @@ No graded quiz, no "test deg selv" lists, and no bullet summaries after every se
 The questions the text does ask are listed under Structure, and each must be answerable in the head in under a minute.
 
 **Structure:**
-- YAML header: `title` (an inviting title, not the lecture name), `subtitle` (`<KODE eller tema> · <enheter>`, for example `ABC1234 · T3-T5`), `date` (for example `6. oktober 2026`), `abstract` (what the reader can *do* afterwards, as one or two concrete abilities: "følge alfa-beta gjennom et tre og si hvilke grener som kuttes"), `lang: nb`.
+- YAML header: `title` (an inviting title, not the lecture name), `subtitle` (`<emne eller tema> · <enheter>`, for example `algdat · T3-T5`), `date` (for example `6. oktober 2026`), `abstract` (what the reader can *do* afterwards, as one or two concrete abilities: "følge alfa-beta gjennom et tre og si hvilke grener som kuttes"), `lang: nb`.
 - **Spaced repetition first:** when `kveldslesing.md` has an earlier PDF for the same code (not counting the one this PDF replaces), the first chapter is `# Fra sist`: 2-3 questions on concepts from that PDF, each asking for one value, one choice or one definition, with the answers together in one `svar` div. Prefer concepts with recorded error types in `elevmodell.md`. Skip the chapter for the first PDF of a code.
 - One `#` chapter per main idea (each starts on a new page), opening with `> **Problemet:** <one question>`. `##` for sections. Max one level below.
 - **Exam weight per chapter:** right after Problemet, one line `> **Eksamen:** høy|middels|lav, <why in a few words>`, taken from the Eksamensvekt column in `læreplan.md` and the course's exam format in `config.md`. Put the high-weight chapters first when the prerequisites allow it. After the last chapter of the core (what the exam asks for most), add `> **Stopp her hvis du er trøtt:** <what the rest covers and why it weighs less>`.
@@ -151,7 +151,7 @@ Fix every finding, or decide in one line why it is not a problem.
 
 ## 6. Build and check
 
-The PDF goes straight to the kveldslesing folder as `<dato>-<kode>-<enheter>.pdf`, for example `2026-10-06-ABC1234-T3-T5.pdf`:
+The PDF goes straight to the kveldslesing folder as `<dato>-<kode>-<enheter>.pdf`, for example `2026-10-06-algdat-T3-T5.pdf`:
 
 ```
 /usr/bin/python3 <skill-mappe>/scripts/build.py <arbeidsmappe>/lesing.md --out <kveldslesing-mappe>/<filnavn>.pdf --preview <arbeidsmappe>/forhandsvisning

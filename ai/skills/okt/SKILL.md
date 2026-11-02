@@ -4,9 +4,9 @@ description: >
   Run one study session ("økt") in the obsidian-laeringshvelv vault: pick course and topic,
   warm-up recall, teach new material Socratically, give exam-style problems, update the
   learner model, make flashcards and log everything. Started by the `studie okt` and
-  `studie <emnekode>` shell commands as `/okt` or `/okt <emnekode>`. Use whenever the user wants to study, "ta en økt",
+  `studie <emne>` shell commands as `/okt` or `/okt <emne>`. Use whenever the user wants to study, "ta en økt",
   "studere", "fortsett økta" or resume an interrupted session.
-argument-hint: "[emnekode]"
+argument-hint: "[emne]"
 ---
 
 # Økt
@@ -48,7 +48,7 @@ The session can die at any moment (terminal closed, usage limit, context compact
 
 1. `date '+%F %H:%M'`. This is the start time.
 2. Read `_system/config.md`, the study plan if Stier in `config.md` lists one, and the last ~60 lines of `_system/logg.md`.
-   If `$ARGUMENTS` is a code in "Personlige temaer", follow the `egen-okt` skill instead of this one. If it is neither a course code nor a personal topic, list both kinds of codes, say that `studie ny` plans a new topic, and stop.
+   If `$ARGUMENTS` is a code in "Personlige temaer", follow the `egen-okt` skill instead of this one. If it is neither a course (the Emne column in Emner) nor a personal topic, list both kinds of names, say that `studie ny` plans a new topic, and stop.
 3. **Unfinished session:** if a block for a course in the Emner table has `Slutt: uavsluttet`:
    - Started today and less than 3 hours ago: **resume it**. Append `- gjenopptatt <tid>`, reread the block and `elevmodell.md`, and continue from the last event. If the last event is `- venter: ...`, ask exactly that question again first. Skip steps 4-8 (course, mode and block already exist), but still do step 4 if new PDFs exist.
    - Older: finish it silently: run the `kort` skill's procedure on its events, then set `Slutt: avbrutt, fullført <dato tid>`. Mention it in one line and start a new session.
@@ -64,15 +64,15 @@ The session can die at any moment (terminal closed, usage limit, context compact
      `60 / max(dager til eksamen, 1)` + `2 ×` (held lectures with high exam weight not `lært`) + `1 ×` (other held lectures not `lært`) + `0.5 ×` (days since last session in this course, max 10).
      A lecture is held when its Dato in `læreplan.md` is today or earlier. The læreplan stores no held status, so always compute it from the date.
      For a course the user follows on their own ("Oppfølging av undervisning" in `config.md`), halve the two lecture terms: the user has seen that material, so sessions consolidate instead of teaching from scratch.
-   - Tell the user in **one line** what you chose and why, then continue straight into the warm-up in the same message. Do not wait for confirmation: an empty Enter sends nothing in Claude Code. Example: `ABC1234, T1 søk: 17 dager til eksamen, 6 forelesninger bak. (Skriv en annen emnekode for å bytte.)` If the user answers the first question with a course code instead, switch course.
+   - Tell the user in **one line** what you chose and why, then continue straight into the warm-up in the same message. Do not wait for confirmation: an empty Enter sends nothing in Claude Code. Example: `algdat, T1 søk: 17 dager til eksamen, 6 forelesninger bak. (Skriv et annet emne for å bytte.)` If the user answers the first question with a course name instead, switch course.
 6. **Capture notes** (the user's own notes from lectures and videos):
-   - **Sort the inbox first:** every note in `00 innboks/` with `type: fangst` belongs to the course its `Kilde:` line names, matched against "Fangst" in `config.md` (nicknames), the course code and the course name. Move it to `10 fag/<fag>/fangst/` with `mv`. Delete a capture with nothing under its headings (an empty template). Leave a capture whose course is unclear in the inbox and mention it in one line. Log `- fangst: flyttet <n>, slettet <n> tomme`.
+   - **Sort the inbox first:** every note in `00 innboks/` with `type: fangst` belongs to the course its `Kilde:` line names, matched against "Fangst" in `config.md` (nicknames), the Emne, the Emnekode and the Navn. Move it to `10 fag/<fag>/fangst/` with `mv`. Delete a capture with nothing under its headings (an empty template). Leave a capture whose course is unclear in the inbox and mention it in one line. Log `- fangst: flyttet <n>, slettet <n> tomme`.
    - **Read unread captures for today's course:** every `10 fag/<fag>/fangst/*.md` without `lest:` in its frontmatter. Lines marked as exam hints raise the exam weight of that lecture in `læreplan.md`. Things the user did not understand become pretest questions today when the concept is taught in this session. Otherwise add them to that concept's Neste tiltak in `elevmodell.md` (`fangst: <hva som var uklart>`), so they are not lost. Then add `lest: <dato>` to the capture's frontmatter, so it is read once.
 7. **Mode:** days to exam ≤ 7 gives exam mode only. Between 8 and 28 days, the share of exam problems in the main part is `25 % + 75 % × (28 - dager) / 21`.
    If `config.md` makes this session a problem session (for example the day's third session), the main part is problems only, on concepts at level 2 or more, with no new material.
 8. Write the log block:
    ```
-   ## <dato> <tid> <EMNE>
+   ## <dato> <tid> <emne>
    Slutt: uavsluttet
    Tema: <lecture nr and topic>
    Hendelser:
@@ -121,7 +121,7 @@ What a problem means per course: the "Hva en oppgave er" column in "Fordeling og
 
 **Figures in exam or textbook problems** (graphs, trees, circuits, code screenshots, tables): always extract them, never ask the user to open the PDF and find the page.
 1. `pdfverktoy.py sider <pdf> <side> <side>` and read the page image.
-2. `pdfverktoy.py beskjaer <side.png> X0 Y0 X1 Y1 <EMNE> eksamen-<år>-<H|V>-oppg<N>` (textbook: `bok-<kap>-oppg<N>`). The figure goes to `90 vedlegg/figurer/<EMNE>/`, so it can be reused later.
+2. `pdfverktoy.py beskjaer <side.png> X0 Y0 X1 Y1 <emne> eksamen-<år>-<H|V>-oppg<N>` (textbook: `bok-<kap>-oppg<N>`). The figure goes to `90 vedlegg/figurer/<emne>/`, so it can be reused later.
 3. `pdfverktoy.py vis <bilde.webp>` opens it in the image viewer, and you also print the path.
 Copy the task text into the chat yourself. The user should never need the PDF.
 

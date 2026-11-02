@@ -135,9 +135,13 @@ ghclone() {
 studie() { "$HOME/repos/personal/dotfiles/ai/bin/studie" "$@"; }
 oving() { studie oving "$@"; }
 
+_studie_courses() {
+  awk -F'|' '/^## Emner/{t=1; n=0; next} /^## /{t=0} t && /^\|/ && ++n > 2 {gsub(/ /,"",$2); gsub(/^ +| +$/,"",$4); print $2":"$4}' \
+    ~/Documents/obsidian-laeringshvelv/_system/config.md 2>/dev/null
+}
+
 _studie() {
-  local vault=~/Documents/obsidian-laeringshvelv
-  local -a cmds codes
+  local -a cmds courses topics
   cmds=(
     'help:alle kommandoer'
     'okt:skoleøkt, emnet velges etter eksamensplanen'
@@ -150,13 +154,24 @@ _studie() {
     'les:kveldslesings-PDF'
     'innta:les inn nye PDF-er'
   )
-  codes=(${(f)"$(awk -F'|' '/^## Emner/{t=1} t && /^\| [A-Z]+[0-9]+ /{gsub(/ /,"",$2); gsub(/^ +| +$/,"",$3); print $2":"$3} /^## Oppfølging/{t=0}' $vault/_system/config.md 2>/dev/null)"})
-  codes+=(${vault}/15\ egne\ studier/*(N/:t))
-  (( CURRENT == 2 )) || return
-  _describe 'kommando' cmds
-  _describe 'kode' codes
+  courses=(${(f)"$(_studie_courses)"})
+  topics=(~/Documents/obsidian-laeringshvelv/15\ egne\ studier/*(N/:t))
+  if (( CURRENT == 2 )); then
+    _describe 'kommando' cmds
+    _describe 'emne' courses
+    _describe 'tema' topics
+  elif (( CURRENT == 3 )) && [[ $words[2] == (oving|kilder|les) ]]; then
+    _describe 'emne' courses
+    [[ $words[2] == les ]] && _describe 'tema' topics
+  fi
 }
-(( $+functions[compdef] )) && compdef _studie studie
+
+_oving() {
+  local -a courses
+  courses=(${(f)"$(_studie_courses)"})
+  (( CURRENT == 2 )) && _describe 'emne' courses
+}
+(( $+functions[compdef] )) && compdef _studie studie && compdef _oving oving
 
 reposcan() {
   setopt localoptions nomonitor

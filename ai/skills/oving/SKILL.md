@@ -5,10 +5,10 @@ description: >
   obsidian-laeringshvelv vault: find the task, split it into bite-sized steps with time estimates,
   teach just enough theory with a worked example per step, check the user's answers and code,
   and draft when the user is stuck or short on time, until the øving is ready to hand in.
-  Started by the `oving` shell command as `/oving`, `/oving <emnekode>` or `/oving <øvingsnavn>`.
+  Started by the `oving` shell command as `/oving`, `/oving <emne>` or `/oving <øvingsnavn>`.
   Use whenever the user wants help with an øving, "hjelp med øving 6", "gjør matteøvingen",
   "lab 3", "assignment 3", "fortsett øvingen", or points at an exercise PDF.
-argument-hint: "[emnekode | øvingsnavn | sti til oppgave-PDF]"
+argument-hint: "[emne | øvingsnavn | sti til oppgave-PDF]"
 ---
 
 # Øving
@@ -44,9 +44,9 @@ Vault root: `~/Documents/obsidian-laeringshvelv`.
 
 1. `date '+%F %H:%M'`.
 2. **Pick the øving.**
-   - `$ARGUMENTS` names a file, an øving ("exercise 6", "lab 3") or a course code: use it. A course code means that course's open øving with the nearest deadline.
+   - `$ARGUMENTS` names a file, an øving ("exercise 6", "lab 3") or a course (the Emne column in Emner): use it. A course means that course's open øving with the nearest deadline.
    - Otherwise: among notes with `type: øving` and status `ikke påbegynt` or `påbegynt`, take the nearest `frist` that is today or later, with `obligatorisk: ja` before `nei`. A `påbegynt` øving with a deadline within 2 days wins.
-   - Say the choice in **one line** with the deadline and continue in the same message: `ABC1234 exercise 6, frist i morgen 23:59. (Skriv et annet øvingsnavn for å bytte.)` Do not wait for confirmation, because an empty Enter sends nothing.
+   - Say the choice in **one line** with the deadline and continue in the same message: `algdat exercise 6, frist i morgen 23:59. (Skriv et annet øvingsnavn for å bytte.)` Do not wait for confirmation, because an empty Enter sends nothing.
    - If the note does not exist, create it from the template.
 3. **Resume:** if the note has a `## Plan` section, this is a continuation. Read the plan and what the user has written so far (note and hand-in files), say in one line where you continue, and go to step 4 of section 3 for the first unchecked step. Skip the rest of this section.
 4. **Find the task text.** In this order: a link or path in the note, the course's `øvinger/` folder (matching number), newest matching files in `~/Downloads`. If it is only in `~/Downloads`, file it with `pdfverktoy.py kopier "<pdf>" <mappe>/øvinger <navn>.pdf` (programming: into `øving-N/`, created with `mkdir -p`). Do not delete anything from Downloads. If you cannot find it, ask the user for the PDF or a link, in one line.

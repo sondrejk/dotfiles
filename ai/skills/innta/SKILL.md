@@ -7,7 +7,7 @@ description: >
   lecture in læreplan.md is not ingested. Also ingests modules of personal topics from the web,
   books and Claude's own knowledge, called by `egen-okt`. Use also when the user says "les inn",
   "innta" or gives a PDF to ingest.
-argument-hint: "[pdf-sti eller emnekode forelesning]"
+argument-hint: "[pdf-sti eller emne forelesning]"
 ---
 
 # Innta
@@ -47,9 +47,9 @@ Before creating a note, check `20 notater/` (file names and `aliases:`) for an e
 
 For each figure worth keeping: decide the crop box (pixels) on the 150 dpi page image, then:
 ```bash
-/usr/bin/python3 _system/scripts/pdfverktoy.py beskjaer <side.png> X0 Y0 X1 Y1 <EMNE> <navn>
+/usr/bin/python3 _system/scripts/pdfverktoy.py beskjaer <side.png> X0 Y0 X1 Y1 <emne> <navn>
 ```
-This writes `90 vedlegg/figurer/<EMNE>/<navn>.webp`.
+This writes `90 vedlegg/figurer/<emne>/<navn>.webp`.
 Never a whole page unless the whole page is the figure. File names: lowercase Norwegian, hyphenated, descriptive (`samlebånd-fem-steg.webp`). Look at the result image to check the crop.
 
 ## 5. Write concept notes (aim for 10-25 lines)
@@ -91,7 +91,7 @@ aliases:
 ## 6. File the source in Nextcloud
 
 For PDFs from `~/Downloads`:
-1. Name it by the user's scheme: `<EMNE>-F<NN>-<pre|inclass>-<norsk-tema>.pdf` for lectures (`ABC1234-F05-pre-hurtigbuffer-og-virtuelt-minne.pdf`), `Ø<NN>` for exercise lectures, `G<NN>` for guest lectures. Exams: `<EMNE>-<år>-<H|V>[-kont][-l].pdf`, where `-l` is the solution.
+1. Name it by the user's scheme: `<Emnekode>-F<NN>-<pre|inclass>-<norsk-tema>.pdf` for lectures (`ABC1234-F05-pre-hurtigbuffer-og-virtuelt-minne.pdf`), `Ø<NN>` for exercise lectures, `G<NN>` for guest lectures. Exams: `<Emnekode>-<år>-<H|V>[-kont][-l].pdf`, where `-l` is the solution.
 2. **Copy** it with `pdfverktoy.py kopier "<pdf>" <mappe>/<slides|bøker|øvinger|eksamener|notater> <nytt-navn>.pdf`. It refuses to overwrite.
 3. At the end, show one summary line per file (`gammelt navn → ny sti`) and ask: `Slette originalene fra Downloads? (skriv ja)`. Delete (`rm`) only after the user confirms. This asks for permission, on purpose.
 
