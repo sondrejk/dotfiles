@@ -153,6 +153,8 @@ _studie() {
     'oving:hjelp med en obligatorisk øving'
     'les:kveldslesings-PDF'
     'innta:les inn nye PDF-er'
+    'kode:åpne en kodeoppgave i bar vim'
+    'kjør:kompiler og kjør en kodeoppgave'
   )
   courses=(${(f)"$(_studie_courses)"})
   topics=(~/Documents/obsidian-laeringshvelv/15\ egne\ studier/*(N/:t))
@@ -160,9 +162,12 @@ _studie() {
     _describe 'kommando' cmds
     _describe 'emne' courses
     _describe 'tema' topics
-  elif (( CURRENT == 3 )) && [[ $words[2] == (oving|kilder|les) ]]; then
+  elif (( CURRENT == 3 )) && [[ $words[2] == (oving|kilder|les|kode|kjør) ]]; then
     _describe 'emne' courses
     [[ $words[2] == les ]] && _describe 'tema' topics
+  elif (( CURRENT == 4 )) && [[ $words[2] == (kode|kjør) ]]; then
+    local dir
+    dir=$(studie kodemappe $words[3] 2>/dev/null) && [[ -d $dir ]] && _files -W "$dir" -g '*.(c|cu|s|S)~*.main.*'
   fi
 }
 

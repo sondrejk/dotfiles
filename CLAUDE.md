@@ -59,6 +59,8 @@ every machine through this repo.
 | `ai/skills.txt` | Manifest of external skills: `<repo> <path> <ref>`                   |
 | `ai/hooks/`     | Hook scripts referenced from `~/.claude/settings.json`               |
 | `ai/bin/ai-skills` | Sync/fetch script, symlinked onto `PATH`                          |
+| `ai/bin/studie` | CLI for the learning vault, called from the `studie` function in `.zshrc` |
+| `ai/studie/`    | Files `studie` needs, such as `eksamen.vim` (bare vim for coding tasks) |
 
 ```bash
 ai-skills sync    # symlink all skills into each provider's directory
