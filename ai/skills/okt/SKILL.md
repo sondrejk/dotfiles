@@ -30,6 +30,7 @@ All user-facing text is Norwegian bokmål. Never use an em dash.
 | `_system/elevmodell.md` | One row per concept: level 0-4, last tested, confidence, error types, next action. |
 | `_system/logg.md` | One block per session. Write continuously. |
 | `10 fag/<fag>/læreplan.md` | Lectures in order, concepts, prerequisites, exam weight, status, next topic. |
+| `10 fag/<fag>/eksamenskart.md` | Every old exam task with points, lecture, concepts and status (`reservert`, `brukt <dato>`). Built by `innta`. |
 | `20 notater/<konsept>.md` | Concept notes. Infrastructure for you, not reading material for the user. |
 | `_system/beslutninger.md` | All setup decisions. Read only when something here is unclear. |
 
@@ -48,12 +49,13 @@ The session can die at any moment (terminal closed, usage limit, context compact
 
 1. `date '+%F %H:%M'`. This is the start time.
 2. Read `_system/config.md`, the study plan if Stier in `config.md` lists one, and the last ~60 lines of `_system/logg.md`.
+   Run `/usr/bin/python3 _system/scripts/kortstatus.py`. If it reports an `etterslep` above 0, add one line to the first message: `Kort: <n> forfalte venter. Ta dem i dag.`
    If `$ARGUMENTS` is a code in "Personlige temaer", follow the `egen-okt` skill instead of this one. If it is neither a course (the Emne column in Emner) nor a personal topic, list both kinds of names, say that `studie ny` plans a new topic, and stop.
 3. **Unfinished session:** if a block for a course in the Emner table has `Slutt: uavsluttet`:
    - Started today and less than 3 hours ago: **resume it**. Append `- gjenopptatt <tid>`, reread the block and `elevmodell.md`, and continue from the last event. If the last event is `- venter: ...`, ask exactly that question again first. Skip steps 4-8 (course, mode and block already exist), but still do step 4 if new PDFs exist.
    - Older: finish it silently: run the `kort` skill's procedure on its events, then set `Slutt: avbrutt, fullført <dato tid>`. Mention it in one line and start a new session.
    - Unfinished blocks for personal topics belong to `egen-okt`. Finish them silently the same way only if they are older than 3 hours.
-4. **New sources:** `/usr/bin/python3 _system/scripts/pdfverktoy.py nye`. If it lists any, run the `innta` skill's procedure on them. If the material belongs to a lecture whose prerequisites in `læreplan.md` are all `lært`, it becomes today's topic, and its course becomes today's course unless the user gave one. Otherwise it is only ingested and does not change course or topic. A lecture date says nothing about what the user has seen: see "Oppfølging av undervisning" in `config.md`.
+4. **New sources:** `/usr/bin/python3 _system/scripts/pdfverktoy.py nye`. If it lists any, run the `innta` skill's procedure on them. If the material belongs to a lecture whose prerequisites in `læreplan.md` are all `forklart` or `lært`, it becomes today's topic, and its course becomes today's course unless the user gave one. Otherwise it is only ingested and does not change course or topic. A lecture date says nothing about what the user has seen: see "Oppfølging av undervisning" in `config.md`.
    Then run `/usr/bin/python3 _system/scripts/kildesjekk.py`. It lists held lectures (not `innlest` or `lært`) whose slides are missing from Nextcloud or not listed in Kilder. Show the result to the user as a short list in the first message, so they can download the slides into `~/Downloads`, and log it as `- kilder mangler: ...`. Do not wait for the upload: the session continues, and the next session's step 4 picks up the new PDFs.
 5. **Choose course** (skip if `$ARGUMENTS` names one):
    - Only courses in the Emner table. Personal topics are never chosen here, because they run only when the user asks for them.
@@ -69,6 +71,7 @@ The session can die at any moment (terminal closed, usage limit, context compact
    - **Sort the inbox first:** every note in `00 innboks/` with `type: fangst` belongs to the course its `Kilde:` line names, matched against "Fangst" in `config.md` (nicknames), the Emne, the Emnekode and the Navn. Move it to `10 fag/<fag>/fangst/` with `mv`. Delete a capture with nothing under its headings (an empty template). Leave a capture whose course is unclear in the inbox and mention it in one line. Log `- fangst: flyttet <n>, slettet <n> tomme`.
    - **Read unread captures for today's course:** every `10 fag/<fag>/fangst/*.md` without `lest:` in its frontmatter. Lines marked as exam hints raise the exam weight of that lecture in `læreplan.md`. Things the user did not understand become pretest questions today when the concept is taught in this session. Otherwise add them to that concept's Neste tiltak in `elevmodell.md` (`fangst: <hva som var uklart>`), so they are not lost. Then add `lest: <dato>` to the capture's frontmatter, so it is read once.
 7. **Mode:** days to exam ≤ 7 gives exam mode only. Between 8 and 28 days, the share of exam problems in the main part is `25 % + 75 % × (28 - dager) / 21`.
+   This share is a floor on the main part's work time, measured with the `- fase:` times, and it holds also when the course is behind. Plan the session so the problems fit: when the new material runs long, the last block goes to exam problems.
    If `config.md` makes this session a problem session (for example the day's third session), the main part is problems only, on concepts at level 2 or more, with no new material.
 8. Write the log block:
    ```
@@ -94,9 +97,9 @@ The session can die at any moment (terminal closed, usage limit, context compact
 ## 3. Hoveddel (rest of the session's pomodoros)
 
 Split between new material and problems: the Fordeling column in "Fordeling og oppgavetyper" in `config.md`.
-**While the course is behind** (any held lecture with high exam weight is not `lært`), use 60/40 new material to problems instead. A course the user follows on their own is never treated as behind: use 30/70, since the material has been seen and the check questions are quick. Exam mode (step 1.7) overrides all of these.
+**While the course is behind** (any held lecture with high exam weight is not `lært`), use 60/40 new material to problems instead. A course the user follows on their own is never treated as behind: use 30/70, since the material has been seen and the check questions are quick. The exam ramp and exam mode (step 1.7) override all of these.
 
-**Topic:** "Neste tema" in `læreplan.md`, unless new material with all prerequisites `lært` was ingested today.
+**Topic:** "Neste tema" in `læreplan.md`, unless new material with all prerequisites `forklart` or `lært` was ingested today.
 - Status `ikke innlest`: run the `innta` skill's procedure on the lecture's sources in Nextcloud (the path is in the Kilder column and `config.md`), then teach.
 - Status `innlest` with concepts at level 1, in a course the user follows on their own: the user has probably seen them. One check question per concept. A miss gets the full walkthrough below, a hit moves on.
 - In a course the user does not follow, treat held lectures as unseen: go straight to the walkthrough below, starting with its attempt question.
@@ -106,14 +109,20 @@ Split between new material and problems: the Fordeling column in "Fordeling og o
 Novices learn more from worked examples than from repeated questioning, so keep the number of questions per concept low and teach properly when needed.
 
 For each concept, in prerequisite order:
-1. **One attempt question** before any explanation. If the answer is right and confident, go to step 4.
+1. **One attempt question** before any explanation. If the answer is right and confident, go to step 4, but first cover in a few lines the items of the note's Eksamenskrav that the answer did not show.
 2. **Walkthrough on a miss (3-6 min of reading):** a connected explanation that builds on the answer, the note's figure (shown as described under Figures), and **one fully worked example** in the course's notation, step by step. No leading questions in between. This is teaching, not Socratic dialogue.
-3. The user may ask follow-up questions. Answer them fully but briefly.
+   - The walkthrough covers **every item** in the note's `**Eksamenskrav:**`, not only what the attempt revealed. If the note has no such list, build it first as `innta` describes. Items that belong to a later concept are named with `kommer senere`, and must be in that concept's Eksamenskrav (add them if not).
+   - An item of this concept that the walkthrough did not reach goes into the concept's Neste tiltak in `elevmodell.md` as `eksamenskrav: <item>`, so the next session teaches it. Never mark open items in the note itself.
+   - Every symbol, index, abbreviation and name is explained at its first use, also those taken from slide figures (`Dᵢ = domenet til variabel nummer i`, `WA = Western Australia`). A term used before it is taught is marked `kommer senere`.
+   - End with one line: `Dekket: <items>. Kommer senere: <items, and when>.`
+   - Then offer, in one line: `Vil du ha dette visualisert eller i kode?` Where a visual or code clearly helps (an algorithm whose state changes step by step), include it without asking. Visuals: a figure, or an interactive HTML page with step buttons. Code: short Python or pseudocode.
+3. The user may ask follow-up questions. Answer them fully but briefly. Each follow-up question shows a gap in the walkthrough: log it as `- hull: <spørsmålet>`, and add the answer to the concept note (body or Eksamenskrav), so later walkthroughs, cards and problems include it.
 4. **One check question:** the user explains the concept in their own words without notes, or does a small variant of the worked example. Pass means level 2. Write to `elevmodell.md`.
 
 Max 3 questions per concept, the attempt question included. Errors in the check question get a short correction and next action `variant i hoveddel`, not a new round of questions.
 
-When every concept of a lecture reaches level 2 or more, set the lecture's status to `lært` in `læreplan.md` and set `status: gjennomgått` in `10 fag/<fag>/forelesninger/forelesning <nr>.md`.
+When every concept of a lecture reaches level 2 or more and none has an open `eksamenskrav:` in Neste tiltak, set the lecture's status to `forklart` in `læreplan.md`. Later lectures that depend on it can now be taught.
+A `forklart` lecture becomes `lært` after **one exam problem** on it: an old exam task from `eksamenskart.md` if one exists and is not `reservert`, otherwise an exam-style problem built from the Eksamenskrav. Give it in the same session if a problem slot is left, otherwise in the next problem session (see "Tredje økt samme dag" in `config.md`). If the problem needs something no note's Eksamenskrav lists, add it to the note and teach it. The lecture becomes `lært` when the problem has been solved and reviewed, also when the attempt had errors: those become next actions.
 
 ### Problems (level 3)
 
@@ -125,7 +134,8 @@ What a problem means per course: the "Hva en oppgave er" column in "Fordeling og
 3. `pdfverktoy.py vis <bilde.webp>` opens it in the image viewer, and you also print the path.
 Copy the task text into the chat yourself. The user should never need the PDF.
 
-Sources, in order: old exams in the course's `eksamener/` folder (Kilder in Stier in `config.md`) (use the solution file `-l.pdf` to check, and read only the task you need), variants of old exercises (`10 fag/<fag>/øvinger/` and Nextcloud), textbook exercises, and your own exam-style problems. Respect the syllabus exclusions in `læreplan.md`.
+Sources, in order: old exam tasks from the course's `eksamenskart.md`, chosen by concept and points, skipping tasks marked `reservert` (they are kept for full mock exams) and preferring tasks not yet `brukt`. Read only the task you need from the exam PDF in `eksamener/` (Kilder in Stier in `config.md`), check with the solution file `-l.pdf`, and mark the task `brukt <dato>` in the kart. Then variants of old exercises (`10 fag/<fag>/øvinger/` and Nextcloud), textbook exercises, and your own exam-style problems. Respect the syllabus exclusions in `læreplan.md`.
+Your own problems change the form, because the exam may differ from the old ones: a new problem instance, the question asked backwards, two concepts in one task, or an edge case. These are the unfamiliar twists that give level 4.
 
 **Hint ladder, only when the user asks** ("hint"):
 1. Which concept applies.
@@ -167,9 +177,16 @@ A session is the number of pomodoros in "Tidsbudsjett per økt" in `config.md`: 
 - After the last pomodoro, go to the wrap-up. The user may end after any block with "ferdig", or ask for one more block.
 - Log `- fase: <oppvarming|nytt stoff|oppgaver|avslutning> <tid>` whenever the phase changes, so the time split can be measured afterwards. The split per course applies to the session's work time across all blocks.
 
+### Coverage check
+
+Old exams show the format and the weights, not the limits of what can be asked.
+Once per course: in the first session in a course whose `læreplan.md` has no `**Dekningssjekk:** <dato>` line, compare every section of the course's Pensum in `læreplan.md` with the concept notes and their Eksamenskrav.
+List the sections with no note or no requirement in the log as `- dekningssjekk: <emne>: <hull>`, and add each gap as a concept row in the lecture's row of `læreplan.md` and as level 0 in `elevmodell.md`, so the normal topic choice teaches it. Then write the `**Dekningssjekk:** <dato>` line under Pensum.
+
 ## 4. Eksamensmodus
 
-- Mixed tasks from old exams, with a time limit equal to the exam's (points × exam minutes / total points).
+- Mixed tasks from old exams, with a time limit equal to the exam's (points × exam minutes / total points). Never tasks marked `reservert` in `eksamenskart.md`.
+- **Mock exam** on the days the study plan lists under "Prøveeksamener": the whole exam named there, at the real duration and with the real aids, no hints and no questions until it is handed in. A composed mock is built from unused tasks in `eksamenskart.md` and own problems in the course's exam format and point split. Score it with the solution and the exam's points, log `- prøveeksamen: <eksamen> <poeng>/<maks>`, then review task by task. A mock replaces the warm-up and the session's pomodoro blocks, and the wrap-up is the review.
 - No hints during the attempt. Full review afterwards, task by task.
 - Weak topics from the review get next action `oppvarming neste økt` in `elevmodell.md`.
 
@@ -185,5 +202,5 @@ A session is the number of pomodoros in "Tidsbudsjett per økt" in `config.md`: 
    New entries go below older ones.
 2. **Cards:** run the `kort` skill's procedure.
 3. **Log:** set `Slutt: <tid>` and add 1-2 `Observasjoner:` about how the user learns (recurring confusions, what worked).
-4. **Læreplan:** recompute "Neste tema" by the rule at the top of `læreplan.md`.
+4. **Læreplan:** recompute "Neste tema" by the rule at the top of `læreplan.md`. Then run `/usr/bin/python3 _system/scripts/forelesningsstatus.py`, which copies each lecture's status and concept progress into its lecture note for the dashboard.
 5. One line about what the next session will start with.

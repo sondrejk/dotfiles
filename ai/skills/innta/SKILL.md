@@ -60,7 +60,7 @@ File: `20 notater/<norsk tittel>.md` (lowercase, Norwegian, linkable).
 ---
 type: konsept
 fagområde: [<eksisterende fagområde-slug>]
-emner: [<EMNEKODE>]
+emner: [<emne>]
 aliases:
   - <english term>
 ---
@@ -71,6 +71,9 @@ aliases:
 ![[<figur>.webp]]
 
 **Fallgruver:** <typiske misforståelser, bare hvis kilden eller gamle eksamener viser dem>
+
+**Eksamenskrav:**
+- <Definere|Kjøre for hånd|Regne|Forklare hvorfor|Skille fra ...|Skrive kode for>: <det konkrete kravet> (<kilde: slides, bok, eksamen år oppg>)
 
 **Kilde:** <filnavn i Nextcloud>, s. <side>
 
@@ -83,21 +86,53 @@ aliases:
 #flashcards-vent/<domene>
 ```
 
-- Content is only: definition, key formula or result, figure(s), pitfalls, source. No textbook-style explanations.
+- Content is only: definition, key formula or result, figure(s), pitfalls, exam requirements, source. No textbook-style explanations.
+- **Eksamenskrav** lists everything the exam can ask about the concept, so `okt` can teach and test all of it without relying on the user's follow-up questions. Build it from three sources, in this order:
+  1. The syllabus: the slides and the book sections the course's Pensum lists for this lecture, minus the exclusions. Read the book sections too, also when the slides skip them: content that is only in the book belongs here.
+  2. Every old exam task on the topic: the course's `eksamenskart.md` lists them by concept (build the kart first if it is missing, see "Eksamenskart" below). Name the year and task.
+  3. The end-of-chapter exercises in the book for those sections.
+  Each item is one verb plus a concrete requirement. Cover the four kinds where they apply: define it, run or compute it by hand, say when and why it fails, and tell it apart from its nearest neighbour concept.
+  In a note with several `emner:`, each item names its course in the source parenthesis (`maskinnær 2024 oppg 3`), because each course asks different things about a shared concept.
+  The list holds requirements only, never progress. What has been taught lives in `elevmodell.md`.
 - `fagområde` uses existing slugs (see `30 kart/` and `_system/config.md`). Ask before introducing a new one.
 - The flashcard tag domain is the note's first fagområde with spaces as hyphens, and always `#flashcards-vent/` for new notes.
 - **Do not write cards.** `kort` does that when the concept is learned.
+
+## Eksamenskart
+
+`10 fag/<fag>/eksamenskart.md` lists every task in the course's old exams, so Eksamenskrav, exam weights and problem choice build on the same inventory.
+Build it when the course has exams in `eksamener/` and no kart, and add rows when new exams are filed (step 6).
+
+```markdown
+---
+type: meta
+emne: <emne>
+---
+# Eksamenskart <emne>
+
+<One line on the format: total points, duration, task types, which years are representative.>
+
+| Eksamen | Oppgave | Poeng | Type | Forelesning | Konsepter | Status |
+|---|---|---|---|---|---|---|
+| 2025-H | 3b | 4 | <regne, kjøre for hånd, skrive kode, forklare, flervalg, sann/usann> | T4 | [[pekere i C]] | |
+```
+
+- One row per task or subtask with its own points. Read the task text with `pdfverktoy.py tekst`, and the page images only when the text is unclear (figures, tables, code).
+- Forelesning and Konsepter use the læreplan's numbers and concept notes. A task on something no note covers gets the concept name without a link, so the coverage check finds it.
+- Status is empty, `reservert` (kept for a full mock exam in the study plan, never used for single problems) or `brukt <dato>` (written by `okt`).
+- Under the table, a short sum of points per lecture per exam, which is the basis for Eksamensvekt in `læreplan.md`.
 
 ## 6. File the source in Nextcloud
 
 For PDFs from `~/Downloads`:
 1. Name it by the user's scheme: `<Emnekode>-F<NN>-<pre|inclass>-<norsk-tema>.pdf` for lectures (`ABC1234-F05-pre-hurtigbuffer-og-virtuelt-minne.pdf`), `Ø<NN>` for exercise lectures, `G<NN>` for guest lectures. Exams: `<Emnekode>-<år>-<H|V>[-kont][-l].pdf`, where `-l` is the solution.
 2. **Copy** it with `pdfverktoy.py kopier "<pdf>" <mappe>/<slides|bøker|øvinger|eksamener|notater> <nytt-navn>.pdf`. It refuses to overwrite.
+   A new exam gets its rows in `eksamenskart.md` right away.
 3. At the end, show one summary line per file (`gammelt navn → ny sti`) and ask: `Slette originalene fra Downloads? (skriv ja)`. Delete (`rm`) only after the user confirms. This asks for permission, on purpose.
 
 ## 7. Update state
 
-- `10 fag/<fag>/læreplan.md`: add the new concepts to the lecture's row, set status `innlest`, and add `innlest: <fil> s. x-y` to the Kilder column.
+- `10 fag/<fag>/læreplan.md`: add the new concepts to the lecture's row, set status `innlest` (also when it had concept links from other courses before), and add `innlest: <fil> s. x-y` to the Kilder column.
 - `_system/elevmodell.md`: one new row per new concept: level 0, next action `forklar i økt (pretest først)`.
 - If you processed PDFs from Downloads: `pdfverktoy.py marker`.
 - Delete the page images: `pdfverktoy.py rydd`.

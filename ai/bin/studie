@@ -29,10 +29,20 @@ path_setting() {
 
 code_dir() {
 	local course=$1 cloud template
+	# Free coding tasks for fun, outside every course
+	if [[ $course == annet ]]; then
+		template=$(path_setting "Kodeoppgaver (annet)")
+		[[ -n $template ]] || {
+			echo "studie: raden «Kodeoppgaver (annet)» mangler i Stier i config.md" >&2
+			return 1
+		}
+		echo "$template"
+		return 0
+	fi
 	cloud=$(awk -F'|' -v c="$course" '/^## Emner/{t=1; next} /^## /{t=0}
 		t { e=$2; gsub(/ /, "", e); if (e == c) {v=$6; gsub(/`| /, "", v); print v; exit} }' "$CONFIG")
 	[[ -n $cloud ]] || {
-		echo "studie: ukjent emne «$course». Emner: $(course_names | paste -sd' ')" >&2
+		echo "studie: ukjent emne «$course». Emner: $(course_names | paste -sd' ') annet" >&2
 		return 1
 	}
 	template=$(path_setting Kodeoppgaver)
@@ -133,8 +143,11 @@ run_code() {
 		launch=${launch:-./prog}
 		eval "${launch//.\/prog/qemu-arm -L $(printf %q "$sysroot") ./prog}"
 		;;
+	py)
+		eval "${launch:-python3 ${driver:-$name}}"
+		;;
 	*)
-		echo "studie kjør: kan ikke kjøre .$ext-filer (støtter .c, .cu og .s)" >&2
+		echo "studie kjør: kan ikke kjøre .$ext-filer (støtter .c, .cu, .s og .py)" >&2
 		exit 1
 		;;
 	esac
@@ -176,8 +189,9 @@ ${b}Økter${e}
   studie ny [beskrivelse]   planlegg et nytt personlig tema
 
 ${b}Kodeoppgaver i økta${e}
-  studie kode <emne> <fil>  åpne oppgavefila i bar vim (ingen farger eller fullføring)
+  studie kode <emne> <fil>  åpne oppgavefila i bar vim (ingen fullføring)
   studie kjør <emne> <fil>  kompiler og kjør; første kjøring lagres som forsøket
+                            emnet «annet» er frie oppgaver utenfor fagene
 
 ${b}Øvinger og lesing${e}
   studie oving [emne|øving|pdf]   hjelp med en obligatorisk øving (også: oving)

@@ -57,7 +57,7 @@ Reading ahead is allowed: lectures that are not held yet and modules that are no
 1. **Start:** the first unit after the last unit logged for this code in `kveldslesing.md`.
    With no log entry, start at "Neste tema" in `læreplan.md`.
 2. Walk the table in row order from the start.
-   Skip units with status `lært`.
+   Skip units with status `forklart` or `lært`.
    Skip units with no topic text or a slide-only intro with no content.
 3. Take whole units until the estimate reaches the page target.
    One page holds about 140 words once chapter breaks, code and figures are counted, so 25 pages is about 3 500 words.
