@@ -165,9 +165,10 @@ _studie() {
   elif (( CURRENT == 3 )) && [[ $words[2] == (oving|kilder|les|kode|kjør) ]]; then
     _describe 'emne' courses
     [[ $words[2] == les ]] && _describe 'tema' topics
+    [[ $words[2] == (kode|kjør) ]] && compadd -X 'kategori' annet
   elif (( CURRENT == 4 )) && [[ $words[2] == (kode|kjør) ]]; then
     local dir
-    dir=$(studie kodemappe $words[3] 2>/dev/null) && [[ -d $dir ]] && _files -W "$dir" -g '*.(c|cu|s|S)~*.main.*'
+    dir=$(studie kodemappe $words[3] 2>/dev/null) && [[ -d $dir ]] && _files -W "$dir" -g '*.(c|cu|s|S|py)~*.main.*'
   fi
 }
 
