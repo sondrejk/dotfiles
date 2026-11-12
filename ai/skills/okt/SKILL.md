@@ -34,6 +34,8 @@ All user-facing text is Norwegian bokmål. Never use an em dash.
 | `20 notater/<konsept>.md` | Concept notes. Infrastructure for you, not reading material for the user. |
 | `_system/beslutninger.md` | All setup decisions. Read only when something here is unclear. |
 
+While "Parkert" in `config.md` lists `systemendringer`, feedback on the system itself (skills, scripts, rules) goes as one line to the ideas file named there, and the session continues. Fix it at once only when it stops or breaks the session.
+
 Concept notes are context for you: read them instead of the original PDFs. Never reread a source PDF that `innta` has already processed.
 
 ## State is written continuously
@@ -94,7 +96,7 @@ When the only sensible next item depends on a pending answer, queue the next ind
      A lecture is held when its Dato in `læreplan.md` is today or earlier. The læreplan stores no held status, so always compute it from the date.
      For a course the user follows on their own ("Oppfølging av undervisning" in `config.md`), halve the two lecture terms: the user has seen that material, so sessions consolidate instead of teaching from scratch.
    - Tell the user in **one line** what you chose and why, then continue straight into the warm-up in the same message. Do not wait for confirmation: an empty Enter sends nothing in Claude Code. Example: `algdat, T1 søk: 17 dager til eksamen, 6 forelesninger bak. (Skriv et annet emne for å bytte.)` If the user answers the first question with a course name instead, switch course.
-6. **Capture notes** (the user's own notes from lectures and videos):
+6. **Capture notes** (the user's own notes from lectures and videos). Skip this step while "Parkert" in `config.md` lists `fangst`:
    - **Sort the inbox first:** every note in `00 innboks/` with `type: fangst` belongs to the course its `Kilde:` line names, matched against "Fangst" in `config.md` (nicknames), the Emne, the Emnekode and the Navn. Move it to `10 fag/<fag>/fangst/` with `mv`. Delete a capture with nothing under its headings (an empty template). Leave a capture whose course is unclear in the inbox and mention it in one line. Log `- fangst: flyttet <n>, slettet <n> tomme`.
    - **Read unread captures for today's course:** every `10 fag/<fag>/fangst/*.md` without `lest:` in its frontmatter. Lines marked as exam hints raise the exam weight of that lecture in `læreplan.md`. Things the user did not understand become pretest questions today when the concept is taught in this session. Otherwise add them to that concept's Neste tiltak in `elevmodell.md` (`fangst: <hva som var uklart>`), so they are not lost. Then add `lest: <dato>` to the capture's frontmatter, so it is read once.
 7. **Mode:** days to exam ≤ 7 gives exam mode only. Between 8 and 28 days, the share of exam problems in the main part is `25 % + 75 % × (28 - dager) / 21`.
@@ -110,7 +112,7 @@ When the only sensible next item depends on a pending answer, queue the next ind
 
 ## 2. Oppvarming (max 5 minutes)
 
-- 5 questions: 3 from today's course, 2 from other active school courses (interleaving). Never personal topics. A course whose "Aktiv fra" is in the future only gets questions as the exception under the Emner table allows.
+- The number of questions in "Oppvarming" in `config.md`: one more from today's course than from the other active school courses together (interleaving). Never personal topics. A course whose "Aktiv fra" is in the future only gets questions as the exception under the Emner table allows.
 - Pick concepts with level 1-2 and the oldest "sist testet", anything with `sikker-og-feil`, and next actions like "test i oppvarming".
 - Ask one level above the recorded level: level 1 gets an explain question (level 2), level 2 gets a small application (level 3).
 - Warm-up questions are short recall questions answerable in under a minute. Calculations and longer problems belong in the main part.
@@ -199,7 +201,7 @@ When the user writes "sjekk": read the newest file in the submission folder (Inn
 
 ### Time
 
-A session is the number of pomodoros in "Tidsbudsjett per økt" in `config.md`: 25 minutes of work, then a 5-minute break. The blocks are a hard rule, not a suggestion.
+A session is the number of pomodoros in "Tidsbudsjett per økt" in `config.md`: 25 minutes of work, then a 5-minute break. The user decides how long a break lasts: never comment on it or push to resume.
 - Log `- pomodoro <N> start <tid>` when a block starts. The warm-up is part of pomodoro 1.
 - Run `date` after every answer. When 25 minutes of the block have passed, send no new item: the open items may be finished, but nothing new starts. Then log `- pomodoro <N> slutt <tid>` and the next question as `- venter: ...`, and say in one line: `Pause 5 min. Skriv hva som helst når du er tilbake.`
 - When the user returns, start the next block by asking the waiting items, oldest first, and fill the queue to two. Breaks do not count in the time split.
@@ -223,7 +225,7 @@ List the sections with no note or no requirement in the log as `- dekningssjekk:
 
 1. **Cued free recall over the whole session:** list 3-6 keywords, one per concept or problem covered in the session, taken from the log block (not just the last 15 minutes). Keywords name the topic only, never the content (`IEEE 754`, `ldr = og literal pool`, `arrayindeksering i løkker`). The user writes 1-2 sentences from memory per keyword, with no notes.
    Compare each answer with its concept note and point out what is missing or wrong. Gaps that were never taught in the session become next actions, not cards.
-   Save each answer verbatim in that concept's note under `## Med mine ord` (create the section right before `## Flashcards` if missing), as:
+   While "Parkert" in `config.md` lists `med mine ord`, stop here: the corrections stay in the chat and the log. Otherwise save each answer verbatim in that concept's note under `## Med mine ord` (create the section right before `## Flashcards` if missing), as:
    ```
    **<dato>:** <brukerens tekst ordrett>
    Rettelse: <én rettelse per linje>
