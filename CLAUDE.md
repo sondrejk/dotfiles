@@ -102,6 +102,9 @@ Prefix is `C-a`. Key bindings:
 Plugins managed by [tpm](https://github.com/tmux-plugins/tpm). After editing `.tmux.conf`, run `tmux source ~/.tmux.conf` or press `prefix + r`, then `prefix + I` to install new plugins.
 
 Zsh auto-attaches to (or creates) a session named `main` on every new terminal.
+If `main` already has a client, the new terminal gets a grouped session instead (`tmux new-session -t main`).
+It shares the windows of `main`, but each terminal can show its own window, so two screens do not mirror each other.
+The grouped session is destroyed when its terminal closes (`destroy-unattached`).
 
 ## Shell (.zshrc)
 

@@ -87,6 +87,7 @@ aliases:
 ```
 
 - Content is only: definition, key formula or result, figure(s), pitfalls, exam requirements, source. No textbook-style explanations.
+- **Every term in the body is explained or linked:** each technical term the note uses (a file type, a tool, a mechanism, a register) is either explained in one sentence where it first appears or linked with `[[...]]` to a note that explains it. A note that names a term without either is incomplete, because `okt` builds walkthroughs from the note and inherits the gap.
 - **Eksamenskrav** lists everything the exam can ask about the concept, so `okt` can teach and test all of it without relying on the user's follow-up questions. Build it from three sources, in this order:
   1. The syllabus: the slides and the book sections the course's Pensum lists for this lecture, minus the exclusions. Read the book sections too, also when the slides skip them: content that is only in the book belongs here.
   2. Every old exam task on the topic: the course's `eksamenskart.md` lists them by concept (build the kart first if it is missing, see "Eksamenskart" below). Name the year and task.

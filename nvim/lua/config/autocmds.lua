@@ -7,6 +7,17 @@
 -- Or remove existing autocmds by their group name (which is prefixed with `lazyvim_` for the defaults)
 -- e.g. vim.api.nvim_del_augroup_by_name("lazyvim_wrap_spell")
 
+-- LazyVim only checks for outside changes on focus, so a file an agent edits in another
+-- tmux pane stays stale until then and :w ends in a "changed since reading it" prompt.
+vim.api.nvim_create_autocmd({ "BufEnter", "CursorHold", "CursorHoldI" }, {
+  group = vim.api.nvim_create_augroup("checktime_outside_edits", { clear = true }),
+  callback = function()
+    if vim.fn.getcmdwintype() == "" then
+      vim.cmd("checktime")
+    end
+  end,
+})
+
 -- Typst: <leader>cp compiles once, runs `typst watch` fully in the background
 -- (no visible pane), launches zathura (which auto-reloads on file change),
 -- and tiles the terminal + zathura side by side via KWin scripting (see

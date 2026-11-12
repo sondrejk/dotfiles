@@ -40,10 +40,37 @@ Concept notes are context for you: read them instead of the original PDFs. Never
 
 The session can die at any moment (terminal closed, usage limit, context compaction). Nothing may be lost:
 - Write the log block at startup, before anything else happens.
-- Update `elevmodell.md` **after every question and every problem**, not at the end.
+- Update `elevmodell.md` **after every question and every problem**, not at the end. "After" means in the same turn, through the background writer described under "Rhythm".
 - Append each notable event to the session's log block as it happens (`- feil: ...`, `- sikker-og-feil: ...`, `- nivå: ...`, `- hint: ...`).
-- Before asking a question or giving a problem, append `- venter: <the question or problem, verbatim>`, so an interrupted session can ask it again.
+- Before asking a question or giving a problem, append `- venter: <the question or problem, verbatim>`, so an interrupted session can ask it again. Up to two items can be open (see "Rhythm"): write one `- venter:` line per open item, and remove nothing. An answered item gets `- besvart: <nr>` instead.
 - If context was compacted, reread `logg.md` (your own block) and `elevmodell.md` before continuing.
+
+## Rhythm: stay one item ahead
+
+The user must never sit idle while you grade, write files or choose the next step. Feedback may arrive later, as long as the user has something to work on.
+This section sets the rhythm for the warm-up, attempt questions and problems. The walkthrough, the mock exam and "sjekk" are not queued.
+
+**The queue:** keep exactly two items open (sent and not yet answered), numbered per block (`Spørsmål 1`, `Oppgave 2`). The user answers in any order, and an answer without a number belongs to the oldest open item. At the start of a phase, send the first two items in one message.
+
+**On each answer, send one message with:**
+1. Short feedback on the answer just given: verdict, then at most 2 sentences of correction. The deep explanation belongs to the main part (a walkthrough, or the next action in `elevmodell.md`), never here.
+2. The next item. It restores the queue to two open items. The user is already working on the other one.
+Item N+2 is chosen from the answers up to N, not N+1. That small lag is the price of no waiting, and it is accepted.
+
+**What may be queued:** only an item that does not depend on a pending answer: a warm-up question, an attempt question for a new concept, a problem on another concept or lecture, a card round. Never queue a variant of a miss, a re-ask, a follow-up to a hint, or the check question of a walkthrough that has not been sent yet.
+When the only sensible next item depends on a pending answer, queue the next independent item instead (the attempt question of the next concept is always independent), and ask the dependent one once the answer is graded.
+
+**Walkthrough on a miss:** send the walkthrough together with the check question and, if the queue has room, the attempt question of the next concept. Reading the walkthrough is the user's work time.
+
+**Bookkeeping must not block the message.**
+- State writes for an answer (`elevmodell.md` rows, log lines, `- venter:` and `- besvart:` lines) go to a background agent: `Agent` with `run_in_background: true`, a prompt that names the exact rows and lines to write, and never a wait for the result. Keep the running state (levels, streaks, open items) in your own context, and use the files only for recovery after a restart or compaction.
+- If no `Agent` tool is available, do all writes of the turn in one batched command instead of one call per row.
+- Run `date` in the same tool block as the dispatch, so one round of tool calls precedes the message.
+- Read the notes for the next two items only while the user has work open, never before the first message of a phase.
+- Text written before a tool call may not reach the user in Remote Control: dispatch first, then write the whole message as the final text, with no tool call after it.
+- Before the wrap-up and before a pause, confirm that the background writes landed: reread the session's log block and the touched `elevmodell.md` rows, and redo what is missing.
+
+**Pomodoro end and "ferdig":** do not send a new item. Items already open stay open: the user may finish them in the break or after it, and they are asked first in the next block (they have `- venter:` lines).
 
 ## 1. Oppstart (max 1 minute, no questions unless needed)
 
@@ -52,7 +79,7 @@ The session can die at any moment (terminal closed, usage limit, context compact
    Run `/usr/bin/python3 _system/scripts/kortstatus.py`. If it reports an `etterslep` above 0, add one line to the first message: `Kort: <n> forfalte venter. Ta dem i dag.`
    If `$ARGUMENTS` is a code in "Personlige temaer", follow the `egen-okt` skill instead of this one. If it is neither a course (the Emne column in Emner) nor a personal topic, list both kinds of names, say that `studie ny` plans a new topic, and stop.
 3. **Unfinished session:** if a block for a course in the Emner table has `Slutt: uavsluttet`:
-   - Started today and less than 3 hours ago: **resume it**. Append `- gjenopptatt <tid>`, reread the block and `elevmodell.md`, and continue from the last event. If the last event is `- venter: ...`, ask exactly that question again first. Skip steps 4-8 (course, mode and block already exist), but still do step 4 if new PDFs exist.
+   - Started today and less than 3 hours ago: **resume it**. Append `- gjenopptatt <tid>`, reread the block and `elevmodell.md`, and continue from the last event. Ask every open `- venter:` item (a `- venter:` line with no later `- besvart:` for it) again first, verbatim and oldest first. Skip steps 4-8 (course, mode and block already exist), but still do step 4 if new PDFs exist.
    - Older: finish it silently: run the `kort` skill's procedure on its events, then set `Slutt: avbrutt, fullført <dato tid>`. Mention it in one line and start a new session.
    - Unfinished blocks for personal topics belong to `egen-okt`. Finish them silently the same way only if they are older than 3 hours.
 4. **New sources:** `/usr/bin/python3 _system/scripts/pdfverktoy.py nye`. If it lists any, run the `innta` skill's procedure on them. If the material belongs to a lecture whose prerequisites in `læreplan.md` are all `forklart` or `lært`, it becomes today's topic, and its course becomes today's course unless the user gave one. Otherwise it is only ingested and does not change course or topic. A lecture date says nothing about what the user has seen: see "Oppfølging av undervisning" in `config.md`.
@@ -87,10 +114,10 @@ The session can die at any moment (terminal closed, usage limit, context compact
 - Pick concepts with level 1-2 and the oldest "sist testet", anything with `sikker-og-feil`, and next actions like "test i oppvarming".
 - Ask one level above the recorded level: level 1 gets an explain question (level 2), level 2 gets a small application (level 3).
 - Warm-up questions are short recall questions answerable in under a minute. Calculations and longer problems belong in the main part.
-- **Hard time cap:** log `- fase: oppvarming <tid>` when it starts, and run `date` after every answer. At 5 minutes, stop the warm-up even if questions remain. Unasked concepts keep next action `test i oppvarming`.
-- One question at a time. The user answers and gives confidence 1-3 (`svar (sikkerhet)`). Ask for confidence if it is missing.
+- **Hard time cap:** log `- fase: oppvarming <tid>` when it starts, and run `date` after every answer. At 5 minutes, stop sending warm-up questions even if some remain. Open questions can still be answered and graded. Unasked concepts keep next action `test i oppvarming`.
+- Two questions are open at a time, as under "Rhythm". The user answers and gives confidence 1-3 (`svar (sikkerhet)`). Ask for confidence if it is missing, in the next message.
 - **Correct:** two correct in a row raise the level by 1. Track the first correct answer in "Neste tiltak" as `1 riktig på nivå N`.
-- **Wrong:** lower the level by 1 (min 0) and give the correct answer with at most 2 sentences of explanation. Do not ask a variant in the warm-up: set next action `variant i hoveddel` if the concept belongs to today's course, otherwise `test i oppvarming`. Deeper explanation belongs in the main part.
+- **Wrong:** lower the level by 1 (min 0) and give the correct answer with at most 2 sentences of explanation. Never ask a variant in the warm-up (it would depend on a pending answer): set next action `variant i hoveddel` if the concept belongs to today's course, otherwise `test i oppvarming`. Deeper explanation belongs in the main part.
 - **Wrong with confidence 3:** also add error type `sikker-og-feil`.
 - **Write to `elevmodell.md` after every question** (level, sist testet = today, sikkerhet, feiltyper, neste tiltak) and append the event to the log block.
 
@@ -114,6 +141,7 @@ For each concept, in prerequisite order:
    - The walkthrough covers **every item** in the note's `**Eksamenskrav:**`, not only what the attempt revealed. If the note has no such list, build it first as `innta` describes. Items that belong to a later concept are named with `kommer senere`, and must be in that concept's Eksamenskrav (add them if not).
    - An item of this concept that the walkthrough did not reach goes into the concept's Neste tiltak in `elevmodell.md` as `eksamenskrav: <item>`, so the next session teaches it. Never mark open items in the note itself.
    - Every symbol, index, abbreviation and name is explained at its first use, also those taken from slide figures (`Dᵢ = domenet til variabel nummer i`, `WA = Western Australia`). A term used before it is taught is marked `kommer senere`.
+   - **Term check before sending:** list every technical term in the walkthrough, including file types, build artefacts, tools and mechanisms it leans on (`.h`, objektfil, lenker, laster, `volatile`, sideeffekt). Each term must be explained in the same message, be a concept at level 2 or more in `elevmodell.md`, or be marked `kommer senere`. Having seen or used it in code does not make it known. Log the check as `- begreper: <term> (forklart|nivå N|kommer senere), ...`. The same check applies to extra context, problems and answers to follow-up questions.
    - End with one line: `Dekket: <items>. Kommer senere: <items, and when>.`
    - Then offer, in one line: `Vil du ha dette visualisert eller i kode?` Where a visual or code clearly helps (an algorithm whose state changes step by step), include it without asking. Visuals: a figure, or an interactive HTML page with step buttons. Code: short Python or pseudocode.
 3. The user may ask follow-up questions. Answer them fully but briefly. Each follow-up question shows a gap in the walkthrough: log it as `- hull: <spørsmålet>`, and add the answer to the concept note (body or Eksamenskrav), so later walkthroughs, cards and problems include it.
@@ -150,6 +178,7 @@ Assess the method, not just the answer: say what is right and why, point to erro
 ### Coding problems
 
 Any problem where the user writes or changes code (C, MPI, OpenMP, CUDA, ARM assembly) is done in a file, not in the chat. Short code-reading questions stay in the chat.
+The queue applies: the second coding problem is created as a file while the first is open, and `studie kode` for it goes in the message that grades the first.
 1. Create the file in the course's code folder (Kodeoppgaver in Stier in `config.md`), named after the task without a date: `vecadd.cu`, `halo-sendrecv.c`, `summer-array.s`. Never overwrite an existing file: pick another name.
 2. Contents: the task text as one `/* ... */` comment at the top, so the user never switches windows. Nothing else when the task says "write a program": no skeleton, no includes, no `main`. Code the task itself gives (find the bug, complete the function, what does this print) goes in below the comment.
 3. Runtime settings the program needs go on one line inside the comment: `kjør: mpirun -np 4 ./prog`, `kjør: OMP_NUM_THREADS=8 ./prog 1000`. Leave it out when `./prog` (or `mpirun -np 4` for MPI) is enough.
@@ -172,8 +201,8 @@ When the user writes "sjekk": read the newest file in the submission folder (Inn
 
 A session is the number of pomodoros in "Tidsbudsjett per økt" in `config.md`: 25 minutes of work, then a 5-minute break. The blocks are a hard rule, not a suggestion.
 - Log `- pomodoro <N> start <tid>` when a block starts. The warm-up is part of pomodoro 1.
-- Run `date` after every answer. When 25 minutes of the block have passed, finish the current question or problem, but never start a new one. Then log `- pomodoro <N> slutt <tid>` and the next question as `- venter: ...`, and say in one line: `Pause 5 min. Skriv hva som helst når du er tilbake.`
-- When the user returns, start the next block by asking the waiting question. Breaks do not count in the time split.
+- Run `date` after every answer. When 25 minutes of the block have passed, send no new item: the open items may be finished, but nothing new starts. Then log `- pomodoro <N> slutt <tid>` and the next question as `- venter: ...`, and say in one line: `Pause 5 min. Skriv hva som helst når du er tilbake.`
+- When the user returns, start the next block by asking the waiting items, oldest first, and fill the queue to two. Breaks do not count in the time split.
 - After the last pomodoro, go to the wrap-up. The user may end after any block with "ferdig", or ask for one more block.
 - Log `- fase: <oppvarming|nytt stoff|oppgaver|avslutning> <tid>` whenever the phase changes, so the time split can be measured afterwards. The split per course applies to the session's work time across all blocks.
 

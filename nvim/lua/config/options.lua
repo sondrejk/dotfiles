@@ -3,6 +3,9 @@
 -- Add any additional options here
 vim.opt.relativenumber = false
 
+-- Files live in git and undofile keeps undo history, so swap files only add stale-swap prompts.
+vim.opt.swapfile = false
+
 -- OpenTofu uses .tofu alongside .tf; Neovim has no built-in detection for it.
 vim.filetype.add({
   extension = {

@@ -62,7 +62,7 @@ The question line is a full sentence that starts with a capital letter. Hvorfor,
 | Definisjon | `CPI` | One sentence that says what the term is. For an abbreviation, the question shows only the abbreviation, so it does not give away the Forkortelse card. |
 | Formel | `AMAT` | The formula, then `der` and every symbol explained. |
 | Notasjon | `rd` | One sentence that says what the notation means. |
-| Funksjon | `MPI_Bcast` | One sentence that says what the instruction, function or unit does. |
+| Funksjon | `MPI_Bcast` | One sentence that says what the instruction, function or unit does. When the name is an abbreviation, end with what it reads as, in English: `*Leses som broadcast.*` |
 | Kontrast | `Write-through vs. write-back - når skrives minnet?` | `X: ... Y: ...`, one short clause per side. |
 | Liste | `De 3 klassene av farer i et samlebånd` | Exactly the named number of items, separated by commas. |
 | Hvorfor | `Hvorfor gir ikke sizeof(ptr) størrelsen på arrayet?` | One sentence with the reason. |

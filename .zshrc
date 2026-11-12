@@ -2,7 +2,13 @@
 # Must run before p10k instant-prompt below, which redirects stdin/stdout
 # and would make -t 0/-t 1 fail here whenever its cache is present.
 if [[ -o interactive && -t 0 && -t 1 && -z "$TMUX" ]]; then
-  exec tmux new-session -A -s main
+  # A second terminal joins main as a grouped session so each screen can show
+  # its own window instead of mirroring the first one.
+  if [[ -n "$(tmux list-clients -t main 2>/dev/null)" ]]; then
+    exec tmux new-session -t main \; set-option destroy-unattached on
+  else
+    exec tmux new-session -A -s main
+  fi
 fi
 
 # Powerlevel10k instant prompt
