@@ -17,6 +17,7 @@ It is not a study session: no cards, no grading, and nothing that changes the st
 The text may still ask the reader to predict a result or fill in one step, because predicting before seeing the answer makes reading stick.
 The PDF always gives the answer itself, a page later, and nothing records whether the reader got it right.
 The request may come from a phone through Remote Control, so ask nothing unless the topic cannot be resolved.
+While "Parkert" in `config.md` lists `kveldslesing`, say in one line that it is parked and until when, and stop. Write it only if the user then asks again.
 
 All user-facing text and the PDF itself are Norwegian bokmål.
 Never use an em dash.
