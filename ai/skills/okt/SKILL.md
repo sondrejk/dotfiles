@@ -44,35 +44,51 @@ The session can die at any moment (terminal closed, usage limit, context compact
 - Write the log block at startup, before anything else happens.
 - Update `elevmodell.md` **after every question and every problem**, not at the end. "After" means in the same turn, through the background writer described under "Rhythm".
 - Append each notable event to the session's log block as it happens (`- feil: ...`, `- sikker-og-feil: ...`, `- nivå: ...`, `- hint: ...`).
-- Before asking a question or giving a problem, append `- venter: <the question or problem, verbatim>`, so an interrupted session can ask it again. Up to two items can be open (see "Rhythm"): write one `- venter:` line per open item, and remove nothing. An answered item gets `- besvart: <nr>` instead.
+- Before asking a question or giving a problem, append `- venter: <the question or problem, verbatim>`, so an interrupted session can ask it again. One item is open at a time (see "Rhythm"). Remove nothing: an answered item gets `- besvart: <nr>`.
 - If context was compacted, reread `logg.md` (your own block) and `elevmodell.md` before continuing.
 
-## Rhythm: stay one item ahead
+## Rhythm: one item at a time, in the task file
 
-The user must never sit idle while you grade, write files or choose the next step. Feedback may arrive later, as long as the user has something to work on.
-This section sets the rhythm for the warm-up, attempt questions and problems. The walkthrough, the mock exam and "sjekk" are not queued.
+The user works on exactly one item at a time and gets feedback on it right away, while it is fresh.
+The item lives in the task file (Oppgavefil in Stier in `config.md`), which the user keeps open in vim with `studie nå` beside the chat. The chat holds feedback, walkthroughs and the user's questions.
+This section sets the rhythm for the warm-up, attempt questions, check questions and problems. The mock exam and "sjekk" follow their own rules.
 
-**The queue:** keep exactly two items open (sent and not yet answered), numbered per block (`Spørsmål 1`, `Oppgave 2`). The user answers in any order, and an answer without a number belongs to the oldest open item. At the start of a phase, send the first two items in one message.
+**The task file:** overwrite it with each new item, in this form, with math in Unicode because vim shows plain text:
+```
+# <Spørsmål|Oppgave> <nr> · <fase> · <emne>: <begrep eller oppgave>
 
-**On each answer, send one message with:**
-1. Short feedback on the answer just given: verdict, then at most 2 sentences of correction. The deep explanation belongs to the main part (a walkthrough, or the next action in `elevmodell.md`), never here.
-2. The next item. It restores the queue to two open items. The user is already working on the other one.
-Item N+2 is chosen from the answers up to N, not N+1. That small lag is the price of no waiting, and it is accepted.
+<the item, complete: everything needed to answer it without the chat>
 
-**What may be queued:** only an item that does not depend on a pending answer: a warm-up question, an attempt question for a new concept, a problem on another concept or lecture, a card round. Never queue a variant of a miss, a re-ask, a follow-up to a hint, or the check question of a walkthrough that has not been sent yet.
-When the only sensible next item depends on a pending answer, queue the next independent item instead (the attempt question of the next concept is always independent), and ask the dependent one once the answer is graded.
+## Svar
 
-**Walkthrough on a miss:** send the walkthrough together with the check question and, if the queue has room, the attempt question of the next concept. Reading the walkthrough is the user's work time.
+
+## Sikkerhet (1-3)
+
+```
+- A problem with sub-questions gives one item per sub-question (a, then b), so each gets feedback while it is fresh. Repeat the setup the sub-question needs in every item.
+- A coding problem: the item names the code file's full path on a line of its own, and nothing else on that line. `studie nå` then shows the code file instead of the task file, and goes back to the task file with the next item that is not code. The answer is the code file itself.
+- A figure: send it in the chat (see Figures) and write `Figur: se chatten.` in the item.
+- After a walkthrough, the item is its check question, with one line saying that the walkthrough is in the chat.
+
+**An answer** arrives as `svar <path>`, sent by the submit key in vim. Read that file: the text under `## Svar` and the number under `## Sikkerhet`. If confidence is missing, ask for it in the feedback and go on without it. A code file path is the attempt of a coding problem (see Coding problems).
+If the user answers in the chat instead (on the phone, or without vim), accept it, and end every message with the item as well, under `**Nå:**`, until a `svar` arrives again.
+
+**On each answer, in one round of tool calls:**
+1. Write the next item to the task file. Choose it from this answer, so a miss gets its variant or walkthrough at once.
+2. Dispatch the bookkeeping (below) and run `date`.
+Then write the feedback as the final text, with no tool call after it: verdict, then at most 2 sentences of correction. The deep explanation belongs in the main part (a walkthrough, or the next action in `elevmodell.md`), never here.
+The next item reaches vim a few seconds before the feedback reaches the chat. That is intended: the user reads the feedback, then starts.
+
+**At the start of a phase,** read the notes for every concept the phase will touch in one batch, before the first item, so later answers need no reads.
+Until the first `svar` of the session has arrived, show the item in the chat as well, since `studie nå` may not be open yet. Say once per session: `Oppgavene står i studie nå. Svar under ## Svar og lever med mellomrom + s.`
 
 **Bookkeeping must not block the message.**
-- State writes for an answer (`elevmodell.md` rows, log lines, `- venter:` and `- besvart:` lines) go to a background agent: `Agent` with `run_in_background: true`, a prompt that names the exact rows and lines to write, and never a wait for the result. Keep the running state (levels, streaks, open items) in your own context, and use the files only for recovery after a restart or compaction.
+- State writes for an answer (`elevmodell.md` rows, log lines, `- venter:` and `- besvart:` lines) go to a background agent: `Agent` with `run_in_background: true`, a prompt that names the exact rows and lines to write, and never a wait for the result. Keep the running state (levels, streaks, the open item) in your own context, and use the files only for recovery after a restart or compaction.
 - If no `Agent` tool is available, do all writes of the turn in one batched command instead of one call per row.
-- Run `date` in the same tool block as the dispatch, so one round of tool calls precedes the message.
-- Read the notes for the next two items only while the user has work open, never before the first message of a phase.
-- Text written before a tool call may not reach the user in Remote Control: dispatch first, then write the whole message as the final text, with no tool call after it.
+- Text written before a tool call may not reach the user in Remote Control: write the whole message as the final text, with no tool call after it.
 - Before the wrap-up and before a pause, confirm that the background writes landed: reread the session's log block and the touched `elevmodell.md` rows, and redo what is missing.
 
-**Pomodoro end and "ferdig":** do not send a new item. Items already open stay open: the user may finish them in the break or after it, and they are asked first in the next block (they have `- venter:` lines).
+**Pomodoro end and "ferdig":** write no new item. Put `Pause til <tid>.` on the first line of the task file and leave the open item below it. It has its `- venter:` line and is the first thing in the next block.
 
 ## 1. Oppstart (max 1 minute, no questions unless needed)
 
@@ -117,7 +133,7 @@ When the only sensible next item depends on a pending answer, queue the next ind
 - Ask one level above the recorded level: level 1 gets an explain question (level 2), level 2 gets a small application (level 3).
 - Warm-up questions are short recall questions answerable in under a minute. Calculations and longer problems belong in the main part.
 - **Hard time cap:** log `- fase: oppvarming <tid>` when it starts, and run `date` after every answer. At 5 minutes, stop sending warm-up questions even if some remain. Open questions can still be answered and graded. Unasked concepts keep next action `test i oppvarming`.
-- Two questions are open at a time, as under "Rhythm". The user answers and gives confidence 1-3 (`svar (sikkerhet)`). Ask for confidence if it is missing, in the next message.
+- One question at a time in the task file, as under "Rhythm", with confidence 1-3 under `## Sikkerhet`.
 - **Correct:** two correct in a row raise the level by 1. Track the first correct answer in "Neste tiltak" as `1 riktig på nivå N`.
 - **Wrong:** lower the level by 1 (min 0) and give the correct answer with at most 2 sentences of explanation. Never ask a variant in the warm-up (it would depend on a pending answer): set next action `variant i hoveddel` if the concept belongs to today's course, otherwise `test i oppvarming`. Deeper explanation belongs in the main part.
 - **Wrong with confidence 3:** also add error type `sikker-og-feil`.
@@ -180,17 +196,17 @@ Assess the method, not just the answer: say what is right and why, point to erro
 ### Coding problems
 
 Any problem where the user writes or changes code (C, MPI, OpenMP, CUDA, ARM assembly) is done in a file, not in the chat. Short code-reading questions stay in the chat.
-The queue applies: the second coding problem is created as a file while the first is open, and `studie kode` for it goes in the message that grades the first.
+The item in the task file names the code file (see "Rhythm"), and the submit key in vim hands it in.
 1. Create the file in the course's code folder (Kodeoppgaver in Stier in `config.md`), named after the task without a date: `vecadd.cu`, `halo-sendrecv.c`, `summer-array.s`. Never overwrite an existing file: pick another name.
 2. Contents: the task text as one `/* ... */` comment at the top, so the user never switches windows. Nothing else when the task says "write a program": no skeleton, no includes, no `main`. Code the task itself gives (find the bug, complete the function, what does this print) goes in below the comment.
 3. Runtime settings the program needs go on one line inside the comment: `kjør: mpirun -np 4 ./prog`, `kjør: OMP_NUM_THREADS=8 ./prog 1000`. Leave it out when `./prog` (or `mpirun -np 4` for MPI) is enough.
 4. A task that asks only for a function or kernel gets a driver `<navn>.main.<c|cu>` next to it, which `#include`s the user's file (for `.s`: is linked with it) and prints the result. The driver is not a test: it never says right or wrong.
-5. Give the command on its own line, and log `- venter:` with the task and the file path:
+5. Write the item with the file's full path to the task file, and log `- venter:` with the task and the path. In the chat fallback, give the command on its own line instead:
    ```
    studie kode <emne> <fil>
    ```
-   Mention once per session that `studie kjør <emne> <fil>` compiles and runs it (CUDA runs on the CUDA-maskin in config).
-6. When the user says they are done, read `forsøk1/<fil>` if it exists, otherwise the file itself, and copy that to `forsøk1/<fil>`. That first version is the attempt: the level follows it, as on a paper exam without a compiler. Later fixes after compiler errors are learning, not "without hints". Also read the current file, and say what the compiler caught that the attempt missed.
+   Mention once per session that `:make` in vim (or `studie kjør <emne> <fil>`) compiles and runs it, with compiler errors in the quickfix list (CUDA runs on the CUDA-maskin in config).
+6. When `svar <the code file>` arrives (or the user says they are done), read `forsøk1/<fil>` if it exists, otherwise the file itself, and copy that to `forsøk1/<fil>`. That first version is the attempt: the level follows it, as on a paper exam without a compiler. Later fixes after compiler errors are learning, not "without hints". Also read the current file, and say what the compiler caught that the attempt missed.
 7. Feedback follows the rules above. Questions about errors refer to line numbers in the file.
 
 If the user answers a coding problem in the chat instead (no terminal at hand), accept it and assess it the same way.
@@ -203,8 +219,8 @@ When the user writes "sjekk": read the newest file in the submission folder (Inn
 
 A session is the number of pomodoros in "Tidsbudsjett per økt" in `config.md`: 25 minutes of work, then a 5-minute break. The user decides how long a break lasts: never comment on it or push to resume.
 - Log `- pomodoro <N> start <tid>` when a block starts. The warm-up is part of pomodoro 1.
-- Run `date` after every answer. When 25 minutes of the block have passed, send no new item: the open items may be finished, but nothing new starts. Then log `- pomodoro <N> slutt <tid>` and the next question as `- venter: ...`, and say in one line: `Pause 5 min. Skriv hva som helst når du er tilbake.`
-- When the user returns, start the next block by asking the waiting items, oldest first, and fill the queue to two. Breaks do not count in the time split.
+- Run `date` after every answer. When 25 minutes of the block have passed, write no new item: the open one may be finished, but nothing new starts. Then log `- pomodoro <N> slutt <tid>` and the next question as `- venter: ...`, and say in one line: `Pause 5 min. Skriv hva som helst når du er tilbake.`
+- When the user returns, start the next block with the open item, or write a new one to the task file. Breaks do not count in the time split.
 - After the last pomodoro, go to the wrap-up. The user may end after any block with "ferdig", or ask for one more block.
 - Log `- fase: <oppvarming|nytt stoff|oppgaver|avslutning> <tid>` whenever the phase changes, so the time split can be measured afterwards. The split per course applies to the session's work time across all blocks.
 
