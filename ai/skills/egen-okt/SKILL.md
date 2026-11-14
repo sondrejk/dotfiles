@@ -14,7 +14,7 @@ argument-hint: "<kode>"
 A session on a personal topic runs exactly like `okt`, except where this file says otherwise.
 **Read `../okt/SKILL.md` (relative to this skill's base directory) first**, and follow it with the changes below. Section numbers refer to `okt`.
 
-The "Rhythm" section in `okt` applies too: keep two items open, grade in the background. Labs are not queued, because the user builds for a long stretch and `sjekk` ends it.
+The "Rhythm" section in `okt` applies too: one item at a time in the task file, bookkeeping in the background. Labs are the exception: the user builds for a long stretch in the lab folder, and `sjekk` ends it.
 
 In short: the topic is given, the session length is "Tidsbudsjett per personlig økt" in `config.md`, modules replace lectures, milestones replace exams, and tools are learned in labs.
 

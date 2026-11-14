@@ -5,7 +5,10 @@ set -euo pipefail
 VAULT="$HOME/Documents/obsidian-laeringshvelv"
 CONFIG="$VAULT/_system/config.md"
 PYTHON=/usr/bin/python3 # system python has Pillow, which the vault scripts need
-STUDIE_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../studie" && pwd)"
+STUDIE_BIN="$(readlink -f "${BASH_SOURCE[0]}")"
+STUDIE_DIR="$(cd "$(dirname "$STUDIE_BIN")/../studie" && pwd)"
+# eksamen.vim runs `studie kjør` from :make, and PATH inside vim may not have studie
+export STUDIE_BIN
 
 cd "$VAULT" || {
 	echo "studie: fant ikke hvelvet i $VAULT" >&2
@@ -54,6 +57,11 @@ code_dir() {
 }
 
 code_file() {
+	# :make in eksamen.vim passes the full path of the open file
+	if [[ $# -eq 1 && $1 == /* ]]; then
+		echo "$1"
+		return 0
+	fi
 	[[ $# -eq 2 ]] || {
 		echo "studie: skriv emne og fil, for eksempel: studie kode parallelle vecadd.cu" >&2
 		return 1
@@ -70,6 +78,15 @@ edit_code() {
 	exec vim -u "$STUDIE_DIR/eksamen.vim" -i NONE "$file"
 }
 
+dim() {
+	# :make reads the output through a pipe into the quickfix list, where escape codes show as garbage
+	if [[ -t 1 ]]; then
+		printf '\033[2m%s\033[0m\n' "$1"
+	else
+		printf '%s\n' "$1"
+	fi
+}
+
 run_code() {
 	local file
 	file=$(code_file "$@") || exit 1
@@ -84,7 +101,7 @@ run_code() {
 	if [[ ! -e $dir/forsøk1/$name ]]; then
 		mkdir -p "$dir/forsøk1"
 		cp "$file" "$dir/forsøk1/$name"
-		printf '\033[2mFørste kjøring: forsøket er lagret i forsøk1/%s\033[0m\n' "$name"
+		dim "Første kjøring: forsøket er lagret i forsøk1/$name"
 	fi
 
 	# A driver with main() comes with tasks that only ask for a function or kernel
@@ -127,7 +144,7 @@ run_code() {
 				echo "studie kjør: nvcc mangler her, og raden CUDA-maskin mangler i Stier i config.md" >&2
 				exit 1
 			}
-			printf '\033[2mKompilerer og kjører på %s...\033[0m\n' "$host"
+			dim "Kompilerer og kjører på $host..."
 			# Over ssh instead of Nextcloud, so the run never waits for a sync
 			tar -cf - . | ssh "$host" "d=\$(mktemp -d) && tar -C \$d -xf - && cd \$d &&
 				PATH=/opt/cuda/bin:\$PATH nvcc -o prog $(printf %q "$src") && $launch; rc=\$?; rm -rf \$d; exit \$rc"
@@ -174,6 +191,8 @@ session() {
 	local name=$1 prompt=$2
 	shift 2
 	open_vault
+	# The submit key in `studie nå` sends answers to this pane
+	[[ -n ${TMUX_PANE:-} ]] && tmux set-option -g @studie_claude "$TMUX_PANE"
 	exec claude --remote-control "$name" --add-dir "$@" -- "$prompt"
 }
 
@@ -188,8 +207,11 @@ ${b}Økter${e}
   studie <tema>             økt i et personlig tema
   studie ny [beskrivelse]   planlegg et nytt personlig tema
 
-${b}Kodeoppgaver i økta${e}
-  studie kode <emne> <fil>  åpne oppgavefila i bar vim (ingen fullføring)
+${b}Oppgaver i økta${e}
+  studie nå                 oppgaven du jobber med, i vim. Svar under «## Svar»,
+                            lever med mellomrom + s. En kodeoppgave åpner
+                            kodefila direkte, og :make kjører den
+  studie kode <emne> <fil>  åpne oppgavefila i bar vim (ingen fullføring), :make kjører den
   studie kjør <emne> <fil>  kompiler og kjør; første kjøring lagres som forsøket
                             emnet «annet» er frie oppgaver utenfor fagene
 
@@ -211,6 +233,19 @@ ${b}Navn${e}
 
 ${d}Kort repeteres i Obsidian med Ctrl+Shift+R. Notater fra forelesning: Ctrl+N → Ny fangst.${e}
 EOF
+}
+
+open_task() {
+	local file
+	file=$(path_setting Oppgavefil)
+	[[ -n $file ]] || {
+		echo "studie nå: raden Oppgavefil mangler i Stier i config.md" >&2
+		exit 1
+	}
+	file="$VAULT/$file"
+	[[ -e $file ]] || printf '# Ingen oppgave ennå\n\nStart en økt med studie okt i et annet tmux-vindu.\nOppgavene dukker opp her.\n' >"$file"
+	# eksamen.vim follows the task file and opens the code file a coding task names
+	STUDIE_TASK="$file" exec vim -u "$STUDIE_DIR/eksamen.vim" -i NONE "$file"
 }
 
 plan() {
@@ -238,6 +273,9 @@ main() {
 		;;
 	plan)
 		plan
+		;;
+	nå | na)
+		open_task
 		;;
 	kode)
 		edit_code "${@:2}"

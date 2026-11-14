@@ -159,6 +159,7 @@ _studie() {
     'oving:hjelp med en obligatorisk øving'
     'les:kveldslesings-PDF'
     'innta:les inn nye PDF-er'
+    'nå:oppgaven du jobber med, i vim'
     'kode:åpne en kodeoppgave i bar vim'
     'kjør:kompiler og kjør en kodeoppgave'
   )
