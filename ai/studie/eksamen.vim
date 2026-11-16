@@ -11,6 +11,9 @@ set ruler
 set laststatus=2
 set expandtab tabstop=2 shiftwidth=2 softtabstop=2
 
+" Vim's markdown syntax marks every underscore inside a word as an error, and the task file is full of C names
+autocmd Syntax markdown syntax clear markdownError
+
 " The files live in Nextcloud, which would sync swap and undo files to every machine
 set noswapfile nobackup nowritebackup noundofile
 
