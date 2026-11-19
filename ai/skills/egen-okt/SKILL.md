@@ -42,6 +42,8 @@ In addition to the files in `okt`:
 
 ## 2. Oppvarming
 
+When this topic's row in "Repetisjonskø" in config has a Startet date, the topic shares the school repetition queue: run section 2 of `okt` instead of this warm-up, and `kort` treats the topic as in the queue. Until then:
+
 4 questions, max 4 minutes: 3 from this topic and 1 from another active personal topic if one exists. Never school courses.
 Skip the warm-up when fewer than 3 concepts in this topic have level 1 or more, and log `- oppvarming hoppet over (for lite stoff)`.
 
