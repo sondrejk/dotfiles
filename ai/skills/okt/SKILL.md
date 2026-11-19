@@ -3,7 +3,7 @@ name: okt
 description: >
   Run one study session ("økt") in the obsidian-laeringshvelv vault: pick course and topic,
   spaced repetition of learned concepts, teach new material Socratically, give exam-style problems, update the
-  learner model, make flashcards and log everything. Started by the `studie okt` and
+  learner model, make flashcards and log everything. Started by the `studie økt` and
   `studie <emne>` shell commands as `/okt` or `/okt <emne>`. Use whenever the user wants to study, "ta en økt",
   "studere", "fortsett økta" or resume an interrupted session.
 argument-hint: "[emne]"

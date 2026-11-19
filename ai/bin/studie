@@ -202,7 +202,7 @@ usage() {
 ${b}studie${e} - studiesystemet i læringshvelvet
 
 ${b}Økter${e}
-  studie okt                skoleøkt, emnet velges etter eksamensplanen
+  studie økt                skoleøkt, emnet velges etter eksamensplanen
   studie <emne>             skoleøkt i et bestemt emne
   studie <tema>             økt i et personlig tema
   studie ny [beskrivelse]   planlegg et nytt personlig tema
@@ -243,7 +243,7 @@ open_task() {
 		exit 1
 	}
 	file="$VAULT/$file"
-	[[ -e $file ]] || printf '# Ingen oppgave ennå\n\nStart en økt med studie okt i et annet tmux-vindu.\nOppgavene dukker opp her.\n' >"$file"
+	[[ -e $file ]] || printf '# Ingen oppgave ennå\n\nStart en økt med studie økt i et annet tmux-vindu.\nOppgavene dukker opp her.\n' >"$file"
 	# eksamen.vim follows the task file and opens the code file a coding task names
 	STUDIE_TASK="$file" exec vim -u "$STUDIE_DIR/eksamen.vim" -i NONE "$file"
 }
@@ -259,7 +259,7 @@ main() {
 	"" | help | hjelp | -h | --help)
 		usage
 		;;
-	okt)
+	økt | okt)
 		session "studie" "/okt" ~/Downloads ~/Nextcloud/skole
 		;;
 	status)
