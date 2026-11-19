@@ -13,6 +13,18 @@ description: >
 Never ask the user to review card lists. You own the quality: every card must be one the user wants to memorize.
 Cards test memory. Understanding is tested with problems in `okt`, not with cards.
 
+## 0. Repetition queue first
+
+Read "Repetisjonskø" in `_system/config.md`. A course or topic whose row has a Startet date is in the repetition queue: its concepts are repeated by Claude in the repetition block of `okt` (section 2), not with flashcards. For those, this skill writes **only abbreviation cards**:
+- **Candidates:** abbreviations (form Forkortelse) that the session taught or tested, for concepts at level 2 or more, and next actions `kort: forkortelse <X>` from earlier sessions (these first). An abbreviation of a concept below level 2 goes into that concept's Neste tiltak as `kort: forkortelse <X>`, to be written when the concept reaches level 2.
+- **Where:** the collection note `20 notater/forkortelser <kortdomene>.md`, below its `#flashcards/<domene>` tag, in the format of section 4. If the note is missing, create it as `_system/scripts/repetisjonsstart.py` does (frontmatter `type: kortsamling` and `emner`). Add the course to its `emner` if it is missing.
+- **Old abbreviation cards:** when a concept reaches level 2, move any Forkortelse card from its own archived note to the collection note, with its callout below it, so the review history follows.
+- **Limits:** "Maks nye forkortelseskort per økt" in config, and the review brake in section 2. No Definisjon partner card and no activation: the collection note is always active, and the concept notes stay archived.
+- **Never** write other forms for these topics, and never edit cards in their archived notes: those are the question bank for the repetition block.
+- The card standard (section 3) and format (section 4) apply. Report as in section 5: `Kort: 2 nye forkortelser (TLB, SIMD).`
+
+Sections 1 and 2 below (apart from the review brake) apply only to topics not yet in the queue.
+
 A card is a task for the user's future self, months from now, with no memory of the session.
 It must work on its own: a reader who knows the subject but never saw the session can answer it, and answering it helps on an exam question the user has never seen.
 
@@ -37,10 +49,10 @@ Skip a candidate unless a session tested or explained that exact fact. A gap on 
 ## 2. Limits
 
 - **Review brake:** first run `/usr/bin/python3 _system/scripts/kortstatus.py`. It prints "høyeste dag" (the busiest of the next 7 days, with today's overdue and unseen cards counted in) as a percentage of the daily review target. Look up that percentage in "Bremsetrinn" in config, and use the limits of that row instead of the full limits below. If it says there are too many unseen cards, activate nothing. Concepts that would have been activated keep next action `aktiver kort`.
-- **New cards per session:** two limits in `_system/config.md`. Angles 1-3 share "Maks nye kort per økt". Coverage (angle 4) gets its own slots ("Ekstra plasser for huskefakta per økt"), so errors never crowd it out. Main slots left unused may also go to coverage.
+- **New cards per session:** "Maks nye kort per personlig økt" in `_system/config.md`, shared by all angles. Topics not in the repetition queue are personal topics before their Fra date.
 - **What does not fit** goes into the concept's Neste tiltak in `elevmodell.md` as `kort: <items>`, and is written first in the next session.
-- **Active cards per course:** at most "Maks aktive kort per emne" in config. Check with `kortstatus.py`.
-- **Activation:** every concept that reached level 2 or more gets its note's tag switched from `#flashcards-vent/<domene>` to `#flashcards/<domene>` in the same session. At most "Maks aktiverte kort per økt" in config. Remaining concepts keep next action `aktiver kort` in `elevmodell.md` and are activated first in the next session.
+- **Active cards per topic:** at most "Maks aktive kort per personlig tema" in config. Check with `kortstatus.py`.
+- **Activation:** every concept that reached level 2 or more gets its note's tag switched from `#flashcards-vent/<domene>` to `#flashcards/<domene>` in the same session. Remaining concepts keep next action `aktiver kort` in `elevmodell.md` and are activated first in the next session.
 - Before switching a note's tag, check every card in it against the log: each fact must have been tested or explained. If one was not, keep the note waiting and set next action `gå gjennom <fact>, så aktiver kort`.
 - New cards for a concept that is still below level 2 go into the note but stay waiting (the note keeps `#flashcards-vent/`).
 - **Archived notes:** before a note goes from `#flashcards-arkiv/` to waiting or active, rewrite its cards to the card standard and format below.

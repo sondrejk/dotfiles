@@ -2,7 +2,7 @@
 name: okt
 description: >
   Run one study session ("økt") in the obsidian-laeringshvelv vault: pick course and topic,
-  warm-up recall, teach new material Socratically, give exam-style problems, update the
+  spaced repetition of learned concepts, teach new material Socratically, give exam-style problems, update the
   learner model, make flashcards and log everything. Started by the `studie okt` and
   `studie <emne>` shell commands as `/okt` or `/okt <emne>`. Use whenever the user wants to study, "ta en økt",
   "studere", "fortsett økta" or resume an interrupted session.
@@ -51,7 +51,7 @@ The session can die at any moment (terminal closed, usage limit, context compact
 
 The user works on exactly one item at a time and gets feedback on it right away, while it is fresh.
 The item lives in the task file (Oppgavefil in Stier in `config.md`), which the user keeps open in vim with `studie nå` beside the chat. The chat holds feedback, walkthroughs and the user's questions.
-This section sets the rhythm for the warm-up, attempt questions, check questions and problems. The mock exam and "sjekk" follow their own rules.
+This section sets the rhythm for the repetition block, attempt questions, check questions and problems. The mock exam and "sjekk" follow their own rules.
 
 **The task file:** overwrite it with each new item, in this form, with math in Unicode because vim shows plain text:
 ```
@@ -96,6 +96,7 @@ Until the first `svar` of the session has arrived, show the item in the chat as 
 1. `date '+%F %H:%M'`. This is the start time.
 2. Read `_system/config.md`, the study plan if Stier in `config.md` lists one, and the last ~60 lines of `_system/logg.md`.
    Run `/usr/bin/python3 _system/scripts/kortstatus.py`. If it reports an `etterslep` above 0, add one line to the first message: `Kort: <n> forfalte venter. Ta dem i dag.`
+   **Repetition queue:** for each row in "Repetisjonskø" in `config.md` whose Fra is today or earlier and whose Startet is empty, run `/usr/bin/python3 _system/scripts/repetisjonsstart.py <emne>`, write today's date in Startet, and mention it in one line.
    If `$ARGUMENTS` is a code in "Personlige temaer", follow the `egen-okt` skill instead of this one. If it is neither a course (the Emne column in Emner) nor a personal topic, list both kinds of names, say that `studie ny` plans a new topic, and stop.
 3. **Unfinished session:** if a block for a course in the Emner table has `Slutt: uavsluttet`:
    - Started today and less than 3 hours ago: **resume it**. Append `- gjenopptatt <tid>`, reread the block and `elevmodell.md`, and continue from the last event. Ask every open `- venter:` item (a `- venter:` line with no later `- besvart:` for it) again first, verbatim and oldest first. Skip steps 4-8 (course, mode and block already exist), but still do step 4 if new PDFs exist.
@@ -112,7 +113,7 @@ Until the first `svar` of the session has arrived, show the item in the chat as 
      `60 / max(dager til eksamen, 1)` + `2 ×` (held lectures with high exam weight not `lært`) + `1 ×` (other held lectures not `lært`) + `0.5 ×` (days since last session in this course, max 10).
      A lecture is held when its Dato in `læreplan.md` is today or earlier. The læreplan stores no held status, so always compute it from the date.
      For a course the user follows on their own ("Oppfølging av undervisning" in `config.md`), halve the two lecture terms: the user has seen that material, so sessions consolidate instead of teaching from scratch.
-   - Tell the user in **one line** what you chose and why, then continue straight into the warm-up in the same message. Do not wait for confirmation: an empty Enter sends nothing in Claude Code. Example: `algdat, T1 søk: 17 dager til eksamen, 6 forelesninger bak. (Skriv et annet emne for å bytte.)` If the user answers the first question with a course name instead, switch course.
+   - Tell the user in **one line** what you chose and why, then continue straight into the repetition block in the same message. Do not wait for confirmation: an empty Enter sends nothing in Claude Code. Example: `algdat, T1 søk: 17 dager til eksamen, 6 forelesninger bak. (Skriv et annet emne for å bytte.)` If the user answers the first question with a course name instead, switch course.
 6. **Capture notes** (the user's own notes from lectures and videos). Skip this step while "Parkert" in `config.md` lists `fangst`:
    - **Sort the inbox first:** every note in `00 innboks/` with `type: fangst` belongs to the course its `Kilde:` line names, matched against "Fangst" in `config.md` (nicknames), the Emne, the Emnekode and the Navn. Move it to `10 fag/<fag>/fangst/` with `mv`. Delete a capture with nothing under its headings (an empty template). Leave a capture whose course is unclear in the inbox and mention it in one line. Log `- fangst: flyttet <n>, slettet <n> tomme`.
    - **Read unread captures for today's course:** every `10 fag/<fag>/fangst/*.md` without `lest:` in its frontmatter. Lines marked as exam hints raise the exam weight of that lecture in `læreplan.md`. Things the user did not understand become pretest questions today when the concept is taught in this session. Otherwise add them to that concept's Neste tiltak in `elevmodell.md` (`fangst: <hva som var uklart>`), so they are not lost. Then add `lest: <dato>` to the capture's frontmatter, so it is read once.
@@ -127,18 +128,46 @@ Until the first `svar` of the session has arrived, show the item in the chat as 
    Hendelser:
    ```
 
-## 2. Oppvarming (max 5 minutes)
+## 2. Repetisjon (spaced repetition, the time in "Repetisjonsblokk" in config)
 
-- The number of questions in "Oppvarming" in `config.md`: one more from today's course than from the other active school courses together (interleaving). Never personal topics. A course whose "Aktiv fra" is in the future only gets questions as the exception under the Emner table allows.
-- Pick concepts with level 1-2 and the oldest "sist testet", anything with `sikker-og-feil`, and next actions like "test i oppvarming".
-- Ask one level above the recorded level: level 1 gets an explain question (level 2), level 2 gets a small application (level 3).
-- Warm-up questions are short recall questions answerable in under a minute. Calculations and longer problems belong in the main part.
-- **Hard time cap:** log `- fase: oppvarming <tid>` when it starts, and run `date` after every answer. At 5 minutes, stop sending warm-up questions even if some remain. Open questions can still be answered and graded. Unasked concepts keep next action `test i oppvarming`.
-- One question at a time in the task file, as under "Rhythm", with confidence 1-3 under `## Sikkerhet`.
-- **Correct:** two correct in a row raise the level by 1. Track the first correct answer in "Neste tiltak" as `1 riktig på nivå N`.
-- **Wrong:** lower the level by 1 (min 0) and give the correct answer with at most 2 sentences of explanation. Never ask a variant in the warm-up (it would depend on a pending answer): set next action `variant i hoveddel` if the concept belongs to today's course, otherwise `test i oppvarming`. Deeper explanation belongs in the main part.
-- **Wrong with confidence 3:** also add error type `sikker-og-feil`.
-- **Write to `elevmodell.md` after every question** (level, sist testet = today, sikkerhet, feiltyper, neste tiltak) and append the event to the log block.
+Learned concepts come back at growing intervals, and Claude grades the answers, so the user never has to judge whether an explanation matches a card.
+This replaces flashcards for every course and topic in "Repetisjonskø" in `config.md` with a Startet date. Only abbreviations stay as cards (see `kort`).
+
+**Queue:** the `Neste repetisjon` column in `elevmodell.md`. A concept is due when its date is today or earlier. When a course's exam has passed, set `-` for its concepts that belong to no course with an exam ahead.
+
+**Picking,** in this order until the block is full:
+1. Due concepts, most overdue first.
+2. Concepts with error type `sikker-og-feil`, or next action `test i repetisjon`, `test i oppvarming` or `oppvarming neste økt`. Level 1 concepts are among these.
+3. When time is left: the concepts with the nearest date. An early repetition counts as a normal one.
+Interleave: mix the courses, and avoid two concepts from the same lecture in a row. Today's course gets no priority. Never a course whose "Aktiv fra" is in the future, apart from the exception under the Emner table.
+
+**The item:** 3-4 numbered questions in one item in the task file, each on a different concept, each answerable in 1-2 sentences or a tiny calculation. `## Sikkerhet` takes one number per question (`3 2 3`).
+- Phrase each question fresh from the concept note's body, its Eksamenskrav and its archived cards, which are the question bank. Never copy a card verbatim.
+- Vary the angle between repetitions of the same concept: definition, cause, contrast with the nearest neighbour, consequence, a small application, or the description given and the term asked. Log the angle, so the next repetition picks another one.
+- A level 1 concept (step 2) gets an explain question, as the level above.
+- Only facts a session has taught. A gap in untaught material is a teaching task, never a question here.
+
+**Feedback:** per question in order: `riktig`, `delvis` or `feil`, and for delvis and feil the correct answer in one sentence. No variants or walkthroughs in the block: a miss on today's course gets next action `variant i hoveddel`.
+
+**New date,** after each question. I is the previous interval: the old Neste repetisjon minus the old Sist testet, in days, at least 1.
+
+| Result | Neste repetisjon |
+|---|---|
+| riktig, sikkerhet 3 | today + max(2, round(2.5 · I)) |
+| riktig, sikkerhet 1-2 | today + max(2, round(1.5 · I)) |
+| delvis | tomorrow |
+| feil | tomorrow, and the level goes down 1 (min 0) |
+| feil, sikkerhet 3 | tomorrow, level down 1, and error type `sikker-og-feil` |
+
+The factors and the cap are in "Repetisjonsintervaller" in config. Never set a date on or after the day of the nearest exam among the concept's courses: use the day before instead.
+A concept below level 2 has no date (`-`). When it falls below 2, set `-` and next action `test i repetisjon`. When a concept reaches level 2 anywhere in the session (a check question, or two correct here), set tomorrow.
+A concept tested elsewhere in the session (a check question, a problem) also gets a new date from this table.
+
+**Levels:** due concepts at level 2 or more do not rise here: levels 3 and 4 need problems. Step 2 concepts rise as before: two correct in a row raise the level by 1, with the first one tracked in Neste tiltak as `1 riktig på nivå N`.
+
+**Time:** log `- fase: repetisjon <tid>` when it starts, and run `date` after every answer. Fill at least the minimum time, with step 3 if steps 1-2 run out. After the minimum, start a new item only while due concepts (steps 1-2) remain. At the maximum, start no new item. The open item can still be answered and graded. Unasked concepts keep their date, so they come first next time.
+
+**Write to `elevmodell.md` after every item,** through the background writer (see Rhythm): level, sist testet = today, sikkerhet, feiltyper, neste tiltak and neste repetisjon per concept, and one log line per question (`- repetisjon: <begrep> (<vinkel>): riktig|delvis|feil, sikkerhet N, neste <dato>`).
 
 ## 3. Hoveddel (rest of the session's pomodoros)
 
@@ -192,7 +221,7 @@ Your own problems change the form, because the exam may differ from the old ones
 
 Hint 3 or 4 sets next action `variantoppgave uten hjelp` for the concept. Without hints and correct: level 3 (or 4 for an exam problem or an unfamiliar twist).
 Assess the method, not just the answer: say what is right and why, point to errors with a question instead of correcting them outright.
-**Write to `elevmodell.md` after every problem** and append to the log block.
+**Write to `elevmodell.md` after every problem** (with Neste repetisjon, see section 2) and append to the log block.
 
 ### Coding problems
 
@@ -219,11 +248,11 @@ When the user writes "sjekk": read the newest file in the submission folder (Inn
 ### Time
 
 A session is the number of pomodoros in "Tidsbudsjett per økt" in `config.md`: 25 minutes of work, then a 5-minute break. The user decides how long a break lasts: never comment on it or push to resume.
-- Log `- pomodoro <N> start <tid>` when a block starts. The warm-up is part of pomodoro 1.
+- Log `- pomodoro <N> start <tid>` when a block starts. The repetition block is part of pomodoro 1.
 - Run `date` after every answer. When 25 minutes of the block have passed, write no new item: the open one may be finished, but nothing new starts. Then log `- pomodoro <N> slutt <tid>` and the next question as `- venter: ...`, and say in one line: `Pause 5 min. Skriv hva som helst når du er tilbake.`
 - When the user returns, start the next block with the open item, or write a new one to the task file. Breaks do not count in the time split.
 - After the last pomodoro, go to the wrap-up. The user may end after any block with "ferdig", or ask for one more block.
-- Log `- fase: <oppvarming|nytt stoff|oppgaver|avslutning> <tid>` whenever the phase changes, so the time split can be measured afterwards. The split per course applies to the session's work time across all blocks.
+- Log `- fase: <repetisjon|nytt stoff|oppgaver|avslutning> <tid>` whenever the phase changes, so the time split can be measured afterwards. The split per course applies to the session's work time across all blocks.
 
 ### Coverage check
 
@@ -234,9 +263,9 @@ List the sections with no note or no requirement in the log as `- dekningssjekk:
 ## 4. Eksamensmodus
 
 - Mixed tasks from old exams, with a time limit equal to the exam's (points × exam minutes / total points). Never tasks marked `reservert` in `eksamenskart.md`.
-- **Mock exam** on the days the study plan lists under "Prøveeksamener": the whole exam named there, at the real duration and with the real aids, no hints and no questions until it is handed in. A composed mock is built from unused tasks in `eksamenskart.md` and own problems in the course's exam format and point split. Score it with the solution and the exam's points, log `- prøveeksamen: <eksamen> <poeng>/<maks>`, then review task by task. A mock replaces the warm-up and the session's pomodoro blocks, and the wrap-up is the review.
+- **Mock exam** on the days the study plan lists under "Prøveeksamener": the whole exam named there, at the real duration and with the real aids, no hints and no questions until it is handed in. A composed mock is built from unused tasks in `eksamenskart.md` and own problems in the course's exam format and point split. Score it with the solution and the exam's points, log `- prøveeksamen: <eksamen> <poeng>/<maks>`, then review task by task. A mock replaces the repetition block and the session's pomodoro blocks, and the wrap-up is the review.
 - No hints during the attempt. Full review afterwards, task by task.
-- Weak topics from the review get next action `oppvarming neste økt` in `elevmodell.md`.
+- Weak topics from the review get next action `test i repetisjon` in `elevmodell.md`.
 
 ## 5. Avslutning (when the user writes "ferdig", max 5 minutes)
 
