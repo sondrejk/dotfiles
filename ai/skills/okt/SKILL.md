@@ -67,6 +67,7 @@ This section sets the rhythm for the warm-up, attempt questions, check questions
 ```
 - A problem with sub-questions gives one item per sub-question (a, then b), so each gets feedback while it is fresh. Repeat the setup the sub-question needs in every item.
 - A coding problem: the item names the code file's full path on a line of its own, and nothing else on that line. `studie nå` then shows the code file instead of the task file, and goes back to the task file with the next item that is not code. The answer is the code file itself.
+- A follow-up on the same code file (a fix, questions about lines in it) goes as a comment in the code file, right under the task comment: `studie nå` stays on a file it already shows, so a new item in the task file would not be seen. Still write a short item in the task file naming the code file, so the log and the fallback agree.
 - A figure: send it in the chat (see Figures) and write `Figur: se chatten.` in the item.
 - After a walkthrough, the item is its check question, with one line saying that the walkthrough is in the chat.
 
@@ -116,7 +117,7 @@ Until the first `svar` of the session has arrived, show the item in the chat as 
    - **Sort the inbox first:** every note in `00 innboks/` with `type: fangst` belongs to the course its `Kilde:` line names, matched against "Fangst" in `config.md` (nicknames), the Emne, the Emnekode and the Navn. Move it to `10 fag/<fag>/fangst/` with `mv`. Delete a capture with nothing under its headings (an empty template). Leave a capture whose course is unclear in the inbox and mention it in one line. Log `- fangst: flyttet <n>, slettet <n> tomme`.
    - **Read unread captures for today's course:** every `10 fag/<fag>/fangst/*.md` without `lest:` in its frontmatter. Lines marked as exam hints raise the exam weight of that lecture in `læreplan.md`. Things the user did not understand become pretest questions today when the concept is taught in this session. Otherwise add them to that concept's Neste tiltak in `elevmodell.md` (`fangst: <hva som var uklart>`), so they are not lost. Then add `lest: <dato>` to the capture's frontmatter, so it is read once.
 7. **Mode:** days to exam ≤ 7 gives exam mode only. Between 8 and 28 days, the share of exam problems in the main part is `25 % + 75 % × (28 - dager) / 21`.
-   This share is a floor on the main part's work time, measured with the `- fase:` times, and it holds also when the course is behind. Plan the session so the problems fit: when the new material runs long, the last block goes to exam problems.
+   This share is a floor on the main part's work time, measured with the `- fase:` times, and it holds also when the course is behind, unless the study plan sets another split for the course (for example more new material while high-weight lectures are not yet explained). Such a rule then replaces both the floor and exam-only mode, but never a mock exam. Plan the session so the problems fit: when the new material runs long, the last block goes to exam problems.
    If `config.md` makes this session a problem session (for example the day's third session), the main part is problems only, on concepts at level 2 or more, with no new material.
 8. Write the log block:
    ```
