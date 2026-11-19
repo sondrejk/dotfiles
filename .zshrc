@@ -150,7 +150,7 @@ _studie() {
   local -a cmds courses topics
   cmds=(
     'help:alle kommandoer'
-    'okt:skoleøkt, emnet velges etter eksamensplanen'
+    'økt:skoleøkt, emnet velges etter eksamensplanen'
     'status:økter mot planen, emner, kort og frister'
     'kort:kort per emne'
     'kilder:forelesninger som mangler slides'
