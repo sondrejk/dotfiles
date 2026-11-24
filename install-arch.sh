@@ -389,12 +389,6 @@ aur_packages=(
 	drawio-desktop-bin
 	visual-studio-code-bin
 	zed-preview-bin
-	# Cross toolchain for 32-bit ARM assembly, run with qemu-arm by `studie kjør`.
-	# All four as -bin, or yay resolves the dependencies to packages that build gcc from source.
-	arm-linux-gnueabihf-binutils-bin
-	arm-linux-gnueabihf-glibc-headers-bin
-	arm-linux-gnueabihf-glibc-bin
-	arm-linux-gnueabihf-gcc-bin
 )
 
 uv_tools=(

@@ -137,54 +137,8 @@ ghclone() {
   print -z "${cmds%$'\n'}"
 }
 
-# The learning-vault CLI lives in the repo, so a `git pull` is all another machine needs
-studie() { "$HOME/repos/personal/dotfiles/ai/bin/studie" "$@"; }
-oving() { studie oving "$@"; }
-
-_studie_courses() {
-  awk -F'|' '/^## Emner/{t=1; n=0; next} /^## /{t=0} t && /^\|/ && ++n > 2 {gsub(/ /,"",$2); gsub(/^ +| +$/,"",$4); print $2":"$4}' \
-    ~/Documents/obsidian-laeringshvelv/_system/config.md 2>/dev/null
-}
-
-_studie() {
-  local -a cmds courses topics
-  cmds=(
-    'help:alle kommandoer'
-    'økt:skoleøkt, emnet velges etter eksamensplanen'
-    'status:økter mot planen, emner, kort og frister'
-    'kort:kort per emne'
-    'kilder:forelesninger som mangler slides'
-    'ny:planlegg et personlig tema'
-    'oving:hjelp med en obligatorisk øving'
-    'les:kveldslesings-PDF'
-    'innta:les inn nye PDF-er'
-    'canvas:oppdater hvelvet med det nye fra Canvas'
-    'nå:oppgaven du jobber med, i vim'
-    'kode:åpne en kodeoppgave i bar vim'
-    'kjør:kompiler og kjør en kodeoppgave'
-  )
-  courses=(${(f)"$(_studie_courses)"})
-  topics=(~/Documents/obsidian-laeringshvelv/15\ egne\ studier/*(N/:t))
-  if (( CURRENT == 2 )); then
-    _describe 'kommando' cmds
-    _describe 'emne' courses
-    _describe 'tema' topics
-  elif (( CURRENT == 3 )) && [[ $words[2] == (oving|kilder|les|kode|kjør) ]]; then
-    _describe 'emne' courses
-    [[ $words[2] == les ]] && _describe 'tema' topics
-    [[ $words[2] == (kode|kjør) ]] && compadd -X 'kategori' annet
-  elif (( CURRENT == 4 )) && [[ $words[2] == (kode|kjør) ]]; then
-    local dir
-    dir=$(studie kodemappe $words[3] 2>/dev/null) && [[ -d $dir ]] && _files -W "$dir" -g '*.(c|cu|s|S|py)~*.main.*'
-  fi
-}
-
-_oving() {
-  local -a courses
-  courses=(${(f)"$(_studie_courses)"})
-  (( CURRENT == 2 )) && _describe 'emne' courses
-}
-(( $+functions[compdef] )) && compdef _studie studie && compdef _oving oving
+# Drop-in shell setup that other repos install, such as the learning system's `studie` completion
+for f in ~/.config/zsh/*.zsh(N); do source "$f"; done
 
 reposcan() {
   setopt localoptions nomonitor
