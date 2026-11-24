@@ -170,15 +170,17 @@ run_code() {
 	esac
 }
 
+vault_open() {
+	# "open" in obsidian.json survives a quit, so it only counts while Obsidian runs
+	pgrep -f /usr/lib/obsidian/app.asar >/dev/null &&
+		jq -e --arg p "$VAULT" 'any(.vaults[]; .path == $p and .open == true)' \
+			~/.config/obsidian/obsidian.json >/dev/null 2>&1
+}
+
 open_vault() {
 	# LiveSync only syncs while Obsidian has the vault open, and sessions edit it from the terminal
 	[[ -n ${WAYLAND_DISPLAY:-} || -n ${DISPLAY:-} ]] || return 0
-	# "open" in obsidian.json survives a quit, so it only counts while Obsidian runs
-	if pgrep -f /usr/lib/obsidian/app.asar >/dev/null &&
-		jq -e --arg p "$VAULT" 'any(.vaults[]; .path == $p and .open == true)' \
-			~/.config/obsidian/obsidian.json >/dev/null 2>&1; then
-		return 0
-	fi
+	vault_open && return 0
 	obsidian "obsidian://open?path=$VAULT" &>/dev/null &
 	disown
 	printf '\033[2mÅpner Obsidian så LiveSync rekker å hente endringer fra de andre maskinene...\033[0m\n'
@@ -194,6 +196,34 @@ session() {
 	# The submit key in `studie nå` sends answers to this pane
 	[[ -n ${TMUX_PANE:-} ]] && tmux set-option -g @studie_claude "$TMUX_PANE"
 	exec claude --remote-control "$name" --add-dir "$@" -- "$prompt"
+}
+
+canvas_news() {
+	local inbox news="" exams
+	inbox=$(path_setting "Nytt fra Canvas")
+	[[ -n $inbox && -f $inbox ]] && grep -q '^## [0-9]' "$inbox" && news=yes
+	exams=$("$PYTHON" _system/scripts/eksamensdekning.py)
+	if [[ -z $news && -z $exams ]]; then
+		echo "Ingenting nytt fra Canvas."
+		return 0
+	fi
+	# Edits made while Obsidian is closed reach the other machines only when it opens, and may clash
+	if ! vault_open && [[ -z ${WAYLAND_DISPLAY:-} && -z ${DISPLAY:-} ]]; then
+		echo "Obsidian kan ikke åpnes her, så okt tar det nye fra Canvas ved neste oppstart."
+		return 0
+	fi
+	open_vault
+	dim "Oppdaterer hvelvet med det nye fra Canvas. Dette tar noen minutter..."
+	# Nobody answers prompts here, so dontAsk denies whatever the vault settings and this list do not allow
+	# --add-dir and --allowedTools take several values, so -- marks where the prompt starts
+	claude -p --permission-mode dontAsk \
+		--allowedTools "Read" "Glob" "Grep" \
+		"Edit(/_system/**)" "Edit(/10 fag/**)" "Edit(/20 notater/**)" "Edit(/90 vedlegg/**)" \
+		"Bash(date *)" "Bash(/usr/bin/python3 _system/scripts/*)" "Bash(python3 _system/scripts/*)" \
+		"Bash(/usr/bin/python3 $VAULT/_system/scripts/*)" \
+		"Bash(soffice --headless --convert-to pdf *)" "Read(/tmp/innta/**)" \
+		"Bash(canvas-henter nettside *)" "WebSearch" "WebFetch" \
+		--add-dir ~/Nextcloud/skole -- "/canvas-nytt"
 }
 
 usage() {
@@ -219,12 +249,13 @@ ${b}Øvinger og lesing${e}
   studie oving [emne|øving|pdf]   hjelp med en obligatorisk øving (også: oving)
   studie les <tema> [sider]       kveldslesings-PDF til mobilen
   studie innta                    les inn nye PDF-er fra ~/Downloads
+  studie canvas                   oppdater hvelvet med det nye fra Canvas
+                                  (canvas-henter kjører den selv etter en henting)
 
 ${b}Oversikt (starter ingen økt)${e}
   studie status             økter mot planen, emner, forfalte kort og frister
   studie kort               aktive, ventende og forfalte kort per emne
   studie kilder             holdte forelesninger som mangler slides
-  studie plan               periodene og reglene i eksamensplanen
   studie help               denne lista (også: studie uten argument)
 
 ${b}Navn${e}
@@ -248,11 +279,6 @@ open_task() {
 	STUDIE_TASK="$file" exec vim -u "$STUDIE_DIR/eksamen.vim" -i NONE "$file"
 }
 
-plan() {
-	# The Perioder and Regler sections are what changes from week to week
-	awk '/^## Perioder/{p=1} /^## Prioritering/{p=0} p' _system/eksamensplan.md
-}
-
 main() {
 	local cmd=${1:-}
 	case "$cmd" in
@@ -270,9 +296,6 @@ main() {
 		;;
 	kilder)
 		"$PYTHON" _system/scripts/kildesjekk.py "${@:2}"
-		;;
-	plan)
-		plan
 		;;
 	nå | na)
 		open_task
@@ -299,6 +322,9 @@ main() {
 			exit 1
 		}
 		session "kveldslesing ${*:2}" "/kveldslesing ${*:2}" ~/Downloads ~/Nextcloud
+		;;
+	canvas)
+		canvas_news
 		;;
 	innta)
 		session "innta" "/innta" ~/Downloads ~/Nextcloud/skole ~/Nextcloud/personlig/egne-studier

@@ -35,7 +35,8 @@ Vault root: `~/Documents/obsidian-laeringshvelv`.
 |---|---|
 | Øving notes | `10 fag/<fag>/øvinger/<navn>.md`, frontmatter `type: øving`, `frist`, `status` (`ikke påbegynt`, `påbegynt`, `hoppet over`, `ferdig`), `obligatorisk` |
 | Template for a new note | `99 maler/øving mal.md` (replace the Templater date with today) |
-| Task PDFs, handout code, the user's code | `<Kilder>/<Nextcloud-mappe>/øvinger/` (Kilder in Stier in `config.md`) (math: `exercise_N.pdf`; programming: `øving-N/` with PDF, handout, Makefile) |
+| Task texts, handouts, solutions | The course's Canvas copy (`canvas/` in its Nextcloud folder): the assignment's `canvas/oppgaver/<navn>/oppgave.md` and the files it links, and Øvinger in `10 fag/<fag>/kilder.md`. Read only, never copied |
+| The user's own work and hand-ins | `<Kilder>/<Nextcloud-mappe>/øvinger/` (Kilder in Stier in `config.md`): math `øving-N.pdf`, programming `øving-N/` with the user's code. Nothing else goes there |
 | New downloads | `~/Downloads` |
 | Course table (vault folder, Nextcloud folder, exam info) | `_system/config.md` |
 | PDF pages as images | `/usr/bin/python3 _system/scripts/pdfverktoy.py sider <pdf> [FRA TIL]` and `tekst`, `bilder`, `beskjaer`, `vis`, `kopier`, `rydd` |
@@ -49,7 +50,8 @@ Vault root: `~/Documents/obsidian-laeringshvelv`.
    - Say the choice in **one line** with the deadline and continue in the same message: `algdat exercise 6, frist i morgen 23:59. (Skriv et annet øvingsnavn for å bytte.)` Do not wait for confirmation, because an empty Enter sends nothing.
    - If the note does not exist, create it from the template.
 3. **Resume:** if the note has a `## Plan` section, this is a continuation. Read the plan and what the user has written so far (note and hand-in files), say in one line where you continue, and go to step 4 of section 3 for the first unchecked step. Skip the rest of this section.
-4. **Find the task text.** In this order: a link or path in the note, the course's `øvinger/` folder (matching number), newest matching files in `~/Downloads`. If it is only in `~/Downloads`, file it with `pdfverktoy.py kopier "<pdf>" <mappe>/øvinger <navn>.pdf` (programming: into `øving-N/`, created with `mkdir -p`). Do not delete anything from Downloads. If you cannot find it, ask the user for the PDF or a link, in one line.
+4. **Find the task text.** In this order: a link or path in the note, Øvinger in the course's `kilder.md`, the assignment in the Canvas copy (`canvas/oppgaver/`, `canvas/moduler.md`, `canvas/nettsider.md`), newest matching files in `~/Downloads`. Write the path into the note. Only a task that is in neither Canvas nor the course website is filed, with `pdfverktoy.py kopier "<pdf>" <mappe>/øvinger <navn>.pdf`. Do not delete anything from Downloads.
+   For programming, copy the handout code the user will edit into `øvinger/øving-N/` (created with `mkdir -p`): from then on it is the user's work. If you cannot find it, ask the user for the PDF or a link, in one line.
 5. **Read the whole task** as page images (`pdfverktoy.py sider`), not just the text layer, since formulas, figures and tables live there. Read handout code and READMEs too. Delete page images with `pdfverktoy.py rydd` when the plan is written.
 6. Set `status: påbegynt` in the note.
 

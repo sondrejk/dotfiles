@@ -30,6 +30,7 @@ All user-facing text is Norwegian bokmål. Never use an em dash.
 | `_system/elevmodell.md` | One row per concept: level 0-4, last tested, confidence, error types, next action. |
 | `_system/logg.md` | One block per session. Write continuously. |
 | `10 fag/<fag>/læreplan.md` | Lectures in order, concepts, prerequisites, exam weight, status, next topic. |
+| `10 fag/<fag>/kilder.md` | Where the course's exams, exercise texts, aids and syllabus books are. Kept current by `canvas-nytt`. |
 | `10 fag/<fag>/eksamenskart.md` | Every old exam task with points, lecture, concepts and status (`reservert`, `brukt <dato>`). Built by `innta`. |
 | `20 notater/<konsept>.md` | Concept notes. Infrastructure for you, not reading material for the user. |
 | `_system/beslutninger.md` | All setup decisions. Read only when something here is unclear. |
@@ -91,7 +92,7 @@ Until the first `svar` of the session has arrived, show the item in the chat as 
 
 **Pomodoro end and "ferdig":** write no new item. Put `Pause til <tid>.` on the first line of the task file and leave the open item below it. It has its `- venter:` line and is the first thing in the next block.
 
-## 1. Oppstart (max 1 minute, no questions unless needed)
+## 1. Oppstart (max 1 minute plus news from Canvas, no questions unless needed)
 
 1. `date '+%F %H:%M'`. This is the start time.
 2. Read `_system/config.md`, the study plan if Stier in `config.md` lists one, and the last ~60 lines of `_system/logg.md`.
@@ -103,7 +104,11 @@ Until the first `svar` of the session has arrived, show the item in the chat as 
    - Older: finish it silently: run the `kort` skill's procedure on its events, then set `Slutt: avbrutt, fullført <dato tid>`. Mention it in one line and start a new session.
    - Unfinished blocks for personal topics belong to `egen-okt`. Finish them silently the same way only if they are older than 3 hours.
 4. **New sources:** `/usr/bin/python3 _system/scripts/pdfverktoy.py nye`. If it lists any, run the `innta` skill's procedure on them. If the material belongs to a lecture whose prerequisites in `læreplan.md` are all `forklart` or `lært`, it becomes today's topic, and its course becomes today's course unless the user gave one. Otherwise it is only ingested and does not change course or topic. A lecture date says nothing about what the user has seen: see "Oppfølging av undervisning" in `config.md`.
-   Then run `/usr/bin/python3 _system/scripts/kildesjekk.py`. It lists held lectures (not `innlest` or `lært`) whose slides are missing from Nextcloud or not listed in Kilder. Show the result to the user as a short list in the first message, so they can download the slides into `~/Downloads`, and log it as `- kilder mangler: ...`. Do not wait for the upload: the session continues, and the next session's step 4 picks up the new PDFs.
+   Then run `/usr/bin/python3 _system/scripts/kildesjekk.py`. It lists held lectures (not `innlest` or `lært`) whose slides are missing from Nextcloud or not listed in Kilder, and names the file when the course's Canvas copy has it. A source in the Canvas copy needs no upload: `innta` takes it from there. Show only the rest to the user as a short list in the first message, so they can download the slides into `~/Downloads`, and log it as `- kilder mangler: ...`. Do not wait for the upload: the session continues, and the next session's step 4 picks up the new PDFs.
+   **News from Canvas** (the "Nytt fra Canvas" file in Stier in `config.md`):
+   - Dated sections mean that `canvas-nytt` did not run after the last fetch. Run the `canvas-nytt` skill's procedure now, without its ingest bullet: the session ingests what it teaches.
+   - Lines under `## Venter på deg`: ask them in the first message as a short list, apply the answers, and delete each answered line.
+   - If `sist_hentet` in its frontmatter is more than 2 days old, add one line to the first message: `Canvas er sist hentet <dato>. Kjør canvas-henter etter økta.`
 5. **Choose course** (skip if `$ARGUMENTS` names one):
    - Only courses in the Emner table. Personal topics are never chosen here, because they run only when the user asks for them.
    - Exclude courses whose "Aktiv fra" is in the future.
@@ -210,7 +215,7 @@ What a problem means per course: the "Hva en oppgave er" column in "Fordeling og
 3. `pdfverktoy.py vis <bilde.webp>` opens it in the image viewer, and you also print the path.
 Copy the task text into the chat yourself. The user should never need the PDF.
 
-Sources, in order: old exam tasks from the course's `eksamenskart.md`, chosen by concept and points, skipping tasks marked `reservert` (they are kept for full mock exams) and preferring tasks not yet `brukt`. Read only the task you need from the exam PDF in `eksamener/` (Kilder in Stier in `config.md`), check with the solution file `-l.pdf`, and mark the task `brukt <dato>` in the kart. Then variants of old exercises (`10 fag/<fag>/øvinger/` and Nextcloud), textbook exercises, and your own exam-style problems. Respect the syllabus exclusions in `læreplan.md`.
+Sources, in order: old exam tasks from the course's `eksamenskart.md`, chosen by concept and points, skipping tasks marked `reservert` (they are kept for full mock exams) and preferring tasks not yet `brukt` from exams set by this year's lecturer (Faglærere in the kart). Read only the task you need from the exam file that Eksamener in the course's `kilder.md` names (paths from the course's Nextcloud folder), check with the solution file it names, and mark the task `brukt <dato>` in the kart. Then variants of old exercises (`10 fag/<fag>/øvinger/` and Øvinger in `kilder.md`), textbook exercises, and your own exam-style problems. Respect the syllabus exclusions in `læreplan.md`.
 Your own problems change the form, because the exam may differ from the old ones: a new problem instance, the question asked backwards, two concepts in one task, or an edge case. These are the unfamiliar twists that give level 4.
 
 **Hint ladder, only when the user asks** ("hint"):
