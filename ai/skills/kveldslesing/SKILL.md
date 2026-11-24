@@ -71,7 +71,7 @@ Reading ahead is allowed: lectures that are not held yet and modules that are no
 Per unit, in this order:
 1. Concept notes listed in the Konsepter column (`20 notater/`).
 2. For a unit without notes: the sources in the Kilder column.
-   Course slides and books: the course's source folder (Kilder in Stier in `config.md`), read with `/usr/bin/python3 _system/scripts/pdfverktoy.py tekst <pdf> [fra til]`, only the slides the lecture note lists.
+   Course slides and books: the paths in the lecture's Kilder column (a path starting with `canvas/` is in the course's Nextcloud folder, other names in the source folder, Kilder in Stier in `config.md`), read with `/usr/bin/python3 _system/scripts/pdfverktoy.py tekst <pdf> [fra til]`, only the slides the lecture note lists.
    Personal topics: the anchor sources in `læreplan.md`, with WebFetch on the official docs pages, plus your own knowledge.
 3. Check every version-specific fact (flags, defaults, API fields) against the source.
    Do not invent numbers, dates or names.

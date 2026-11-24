@@ -3,7 +3,8 @@ name: innta
 description: >
   Ingest course sources (lecture slides, book chapters, notes as PDF) into the
   obsidian-laeringshvelv vault as short atomic concept notes with cropped figures, and file the
-  PDF in Nextcloud. Called by `okt` at startup (new PDFs in ~/Downloads) or when the next
+  PDF in Nextcloud. Reads sources in place in the Canvas copy written by canvas-henter, and files
+  PDFs from ~/Downloads that Canvas does not have. Called by `okt` at startup (new PDFs in ~/Downloads) or when the next
   lecture in læreplan.md is not ingested. Also ingests modules of personal topics from the web,
   books and Claude's own knowledge, called by `egen-okt`. Use also when the user says "les inn",
   "innta" or gives a PDF to ingest.
@@ -21,7 +22,14 @@ Paths and course table: `_system/config.md`.
 ## 1. Find sources and course
 
 - From `okt` startup: `/usr/bin/python3 _system/scripts/pdfverktoy.py nye`.
-- From the læreplan: the lecture's sources (Kilder column) in the course's source folder (Kilder in Stier in `config.md`). For a book, only the chapter pages the lecture covers (find them in the table of contents with `pdfverktoy.py tekst <pdf> 1 20`).
+- From the læreplan: the lecture's sources (Kilder column). A path that starts with `canvas/` is in the course's Nextcloud folder. Other names are in the course's source folder (Kilder in Stier in `config.md`). For a book, only the chapter pages the lecture covers (find them in the table of contents with `pdfverktoy.py tekst <pdf> 1 20`).
+- Exams, exercise texts, aids and syllabus books: Pensum, Eksamener, Øvinger and Hjelpemidler in the course's `10 fag/<fag>/kilder.md`.
+- **The Canvas copy** (`canvas/` in the course's Nextcloud folder, Canvas-kopi in Stier in `config.md`) holds everything from Canvas and the course's own websites, and is the only copy of that material:
+  - `moduler.md` and `nettsider.md` list the material in the course's own order, with links to the local files. Start there when the Kilder column names no file for a lecture.
+  - `filer/` holds the Canvas files, `nettsider/` the copied course websites, `sider/` and `kunngjøringer/` the Canvas text, and `lenker/` copies of other linked pages.
+  - Read sources where they are, and cite them by that path. Never copy, rename, move or delete anything in the copy: `canvas-henter` keeps it current and writes it back.
+  - A lecture often exists both as PDF and as PowerPoint (`.pptx`, `.ppsx`, `.pps`). Use the PDF. With only a PowerPoint, convert it first: `soffice --headless --convert-to pdf --outdir /tmp/innta "<fil>"`, and cite the PowerPoint.
+  - New material in the copy is not a reason to ingest. The læreplan, `okt` and `canvas-nytt` decide when a lecture is due, as for any other source.
 - Derive the course from the file name and the first page. Ask only if it is ambiguous. Skip non-course PDFs (receipts, shipping labels) silently.
 - A PDF that belongs to a personal topic (a book for a code in "Personlige temaer"): file it as in "Personal topics" below and add it to that topic's sources, but do not ingest it now. It must never change the topic of a school session.
 - For a module in a personal topic, follow "Personal topics" at the end of this file.
@@ -75,7 +83,7 @@ aliases:
 **Eksamenskrav:**
 - <Definere|Kjøre for hånd|Regne|Forklare hvorfor|Skille fra ...|Skrive kode for>: <det konkrete kravet> (<kilde: slides, bok, eksamen år oppg>)
 
-**Kilde:** <filnavn i Nextcloud>, s. <side>
+**Kilde:** <sti fra emnets Nextcloud-mappe, for eksempel canvas/filer/F04.pdf>, s. <side>
 
 ## Med mine ord
 
@@ -102,7 +110,7 @@ aliases:
 ## Eksamenskart
 
 `10 fag/<fag>/eksamenskart.md` lists every task in the course's old exams, so Eksamenskrav, exam weights and problem choice build on the same inventory.
-Build it when the course has exams in `eksamener/` and no kart, and add rows when new exams are filed (step 6).
+Build it when Eksamener in the course's `kilder.md` lists exams and no kart exists, and add rows when new exams are listed there.
 
 ```markdown
 ---
@@ -113,10 +121,26 @@ emne: <emne>
 
 <One line on the format: total points, duration, task types, which years are representative.>
 
+## Faglærere
+
+I år (<semester>): <the lecturer or lecturers who teach the course and set the exam> (kilde: <where you found it>).
+
+| Eksamen | Laget av | Samme som i år | Kilde |
+|---|---|---|---|
+| 2025-H | <navn, eller ukjent> | <ja, delvis, nei, ukjent> | <forsiden, emnesiden for semesteret, løsningsforslaget> |
+
+## Oppgaver
+
 | Eksamen | Oppgave | Poeng | Type | Forelesning | Konsepter | Status |
 |---|---|---|---|---|---|---|
 | 2025-H | 3b | 4 | <regne, kjøre for hånd, skrive kode, forklare, flervalg, sann/usann> | T4 | [[pekere i C]] | |
 ```
+
+- **Faglærere:** a new lecturer usually brings a new exam format, so every exam records who set it.
+  - This year's lecturer: the course coordinator and lecturers on the course page (`emneplan.md`, the course website's staff page, the NTNU course page), or the names on this year's slides. Canvas lists teaching assistants as teachers too, so its teacher list alone is not enough.
+  - Who set an old exam: the academic contact on its front page (read the page image when the text layer is empty), else the course website for that semester, else the solution's author, else `ukjent`.
+  - Representative years are the exams set by this year's lecturer. The format line, the exam weights and the choice of problems build on them first. Exams by others count for which topics come up, not for format or point split.
+  - When this year's lecturer did not set any of the last two exams, write `Ny faglærer i år: formatet kan avvike fra <år>.` as the first line under the heading, and say so where you report.
 
 - One row per task or subtask with its own points. Read the task text with `pdfverktoy.py tekst`, and the page images only when the text is unclear (figures, tables, code).
 - Forelesning and Konsepter use the læreplan's numbers and concept notes. A task on something no note covers gets the concept name without a link, so the coverage check finds it.
@@ -125,15 +149,16 @@ emne: <emne>
 
 ## 6. File the source in Nextcloud
 
-For PDFs from `~/Downloads`:
+Only for PDFs from `~/Downloads`. Sources in the Canvas copy stay where they are.
 1. Name it by the user's scheme: `<Emnekode>-F<NN>-<pre|inclass>-<norsk-tema>.pdf` for lectures (`ABC1234-F05-pre-hurtigbuffer-og-virtuelt-minne.pdf`), `Ø<NN>` for exercise lectures, `G<NN>` for guest lectures. Exams: `<Emnekode>-<år>-<H|V>[-kont][-l].pdf`, where `-l` is the solution.
 2. **Copy** it with `pdfverktoy.py kopier "<pdf>" <mappe>/<slides|bøker|øvinger|eksamener|notater> <nytt-navn>.pdf`. It refuses to overwrite.
-   A new exam gets its rows in `eksamenskart.md` right away.
+   First check that the Canvas copy does not already have it: then cite that file and file nothing.
+   A new exam gets its row in Eksamener in `kilder.md` and its rows in `eksamenskart.md` right away. A book gets its row in Pensum.
 3. At the end, show one summary line per file (`gammelt navn → ny sti`) and ask: `Slette originalene fra Downloads? (skriv ja)`. Delete (`rm`) only after the user confirms. This asks for permission, on purpose.
 
 ## 7. Update state
 
-- `10 fag/<fag>/læreplan.md`: add the new concepts to the lecture's row, set status `innlest` (also when it had concept links from other courses before), and add `innlest: <fil> s. x-y` to the Kilder column.
+- `10 fag/<fag>/læreplan.md`: add the new concepts to the lecture's row, set status `innlest` (also when it had concept links from other courses before), and add `innlest: <sti> s. x-y` to the Kilder column, with the path as in the Kilde line.
 - `_system/elevmodell.md`: one new row per new concept: level 0, next action `forklar i økt (pretest først)`.
 - If you processed PDFs from Downloads: `pdfverktoy.py marker`.
 - Delete the page images: `pdfverktoy.py rydd`.
