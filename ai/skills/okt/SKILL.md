@@ -77,7 +77,7 @@ If the user answers in the chat instead (on the phone, or without vim), accept i
 **On each answer, in one round of tool calls:**
 1. Write the next item to the task file. Choose it from this answer, so a miss gets its variant or walkthrough at once.
 2. Dispatch the bookkeeping (below) and run `date`.
-Then write the feedback as the final text, with no tool call after it: verdict, then at most 2 sentences of correction. The deep explanation belongs in the main part (a walkthrough, or the next action in `elevmodell.md`), never here.
+Then write the feedback as the final text, with no tool call after it: verdict, one short sentence naming what the answer got right (the task file is already overwritten, so a bare `riktig` does not tell the user what it refers to), then at most 2 sentences of correction. The deep explanation belongs in the main part (a walkthrough, or the next action in `elevmodell.md`), never here.
 The next item reaches vim a few seconds before the feedback reaches the chat. That is intended: the user reads the feedback, then starts.
 
 **At the start of a phase,** read the notes for every concept the phase will touch in one batch, before the first item, so later answers need no reads.
@@ -147,7 +147,7 @@ Interleave: mix the courses, and avoid two concepts from the same lecture in a r
 - A level 1 concept (step 2) gets an explain question, as the level above.
 - Only facts a session has taught. A gap in untaught material is a teaching task, never a question here.
 
-**Feedback:** per question in order: `riktig`, `delvis` or `feil`, and for delvis and feil the correct answer in one sentence. No variants or walkthroughs in the block: a miss on today's course gets next action `variant i hoveddel`.
+**Feedback:** per question in order: `riktig`, `delvis` or `feil`, with one short sentence summing up what the answer got right (not the whole answer), and for delvis and feil the correct answer in one sentence. No variants or walkthroughs in the block: a miss on today's course gets next action `variant i hoveddel`.
 
 **New date,** after each question. I is the previous interval: the old Neste repetisjon minus the old Sist testet, in days, at least 1.
 
