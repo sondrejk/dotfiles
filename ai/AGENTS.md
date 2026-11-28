@@ -53,7 +53,8 @@
 
 ## Git
 
-- Do not commit or push unless I ask for it.
+- In repos whose origin is on git.hjem.sondrejk.no (my private Forgejo) and that are not mirrored to github: commit and push finished, tested work without asking.
+- In every other repo: do not commit or push unless I ask for it.
 - If I am on the default branch, create a branch first.
 - Use conventional commits format.
 - Never add your agent name as co-author in commit messages.
